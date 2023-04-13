@@ -29,4 +29,4 @@ through `cargo sqlx prepare`
 
 ## License
 
-This project is following the [MIT license](/blob/master/LICENSE).
+This project is following the [MIT license](/LICENSE).
