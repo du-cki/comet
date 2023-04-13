@@ -1,0 +1,36 @@
+# The interface the webserver is going to run on. Leave it as If
+# you don't know what you're doing.
+bind_addr = [0, 0, 0, 0]
+
+# The port the webserver is going to run on,
+# leave it at 3000 if you're dockerising this.
+bind_port = 3000
+
+# Password for authorized endpoints. Such as the upload endpoint.
+# Must not be empty, would recommend generating a random password with
+# `openssl rand -base64 48`, this should be safe enough.
+# if this is empty, the webserver wont run due to security reasons.
+password = "hiii"
+
+# The length of the randomly generated file names.
+# Should not be less than 3 to avoid colision probability.
+file_name_length = 8
+
+# Where the file goes, just leave it as it is. Must end with a
+# (forward) slash (/). If you're planning to dockerise, leave this as is.
+file_save_path = "media/"
+
+# Should the serve endpoint require an extension along with the file UID.
+# for instance, the get route would be `/YbdlPsdg.png` instead of `/YbdlPsdg`
+# enabling this would make the get route more explicit.
+enforce_file_extensions = true
+
+# If the uploaded file has no content_type, this content_type would be used.
+# Its fine for most cases, so just leaving it as is is fine.
+fallback_content_type = "application/octet-stream"
+
+# The path for each endpoint can be specifiec below, leaving it as is is fine.
+[endpoints]
+get_file = "/media/" # Endpoint for serving files, Must end with (forward) slash [/].
+delete_file = "/delete/" # Endpoint for deleting files, Must end with (forward) slash [/].
+upload_file = "/upload" # Endpoint for uploading files.
