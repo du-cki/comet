@@ -15,7 +15,7 @@ The setup guide has now been moved to the [wiki](/wiki).
 ## Honorable mentions
 
 - This service does not do any sort of media optimization/compression as if now, however this is planned for the future.
-- You can save alot of bandwith and make it more snappier if you have a caching layer, I.E cloudflare caching the images.
+- You can save alot of bandwidth and make it more snappier if you have a caching layer, I.E cloudflare caching the images.
 
 ## Development
 
