@@ -14,7 +14,7 @@ The setup has been divided into two parts (and further sub-divided for your conv
 and setting up the `client`. At any point do you feel confused, Please refer back to this guide. Open an
 [`issue`](/issues)/[`discussion`](/discussions) thread if you're still confused.
 
-<details open>
+<details>
 <summary>Server</summary>
   
   This guide has been further sub-divided into two parts, running the node and exposing the node. There 
