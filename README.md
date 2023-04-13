@@ -10,12 +10,12 @@ go for a more secure approach but that might prove tricky depending on the clien
 
 ## Setup
 
-The setup guide has now been moved to the [wiki](/wiki).
+The setup guide has now been moved to the [wiki](https://github.com/du-cki/comet/wiki).
 
 ## Honorable mentions
 
-- This service does not do any sort of media optimization/compression as if now, however this is planned for the future.
-- You can save alot of bandwidth and make it more snappier if you have a caching layer, I.E cloudflare caching the images.
+- This service does not do any sort of media optimization/compression as of now, however this is planned for the future.
+- You can save a lot of bandwidth and make it more snappier if you have a caching layer, I.E cloudflare caching the images.
 
 ## Development
 
