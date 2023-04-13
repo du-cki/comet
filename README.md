@@ -27,11 +27,13 @@ and setting up the `client`. At any point do you feel confused, Please refer bac
     <summary>systemd</summary>
 
 - Start by Compiling the project with
-``` sh
+
+```sh
 SQLX_OFFLINE=true cargo build --release
 ```
 
 - After it compiles, create a [systemd configuration file](https://www.freedesktop.org/software/systemd/man/systemd-system.conf.html) at `/etc/systemd/system/` with this format:
+
 ```service
 # /etc/systemd/system/comet.service
 [Unit]
@@ -52,7 +54,7 @@ WantedBy=multi-user.target
 
 - Assuming you've named the file `comet.service`, you can start the service with:
 
-``` sh
+```sh
 (sudo) systemctl start comet
 # You can also "enable" the service so it runs on startup, run:
 # (sudo) systemctl enable comet
@@ -60,11 +62,12 @@ WantedBy=multi-user.target
 
 - If you wish to get rid of an comet instance, run these commands:
 
-``` sh
+```sh
 (sudo) systemctl stop comet
 (sudo) systemctl disable comet
 (sudo) rm /etc/systemd/system/comet.service
 ```
+
   </details>
   
   #### It can then be exposed to the internet through one of these methods.
@@ -105,7 +108,9 @@ cloudflared tunnel run
 
 - To run the program forever, take a look at [this guide](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/tunnel-guide/local/as-a-service/).
   </details>
-###### **more coming soon*
+
+###### \*_more coming soon_
+
 </details>
 
 ---
@@ -234,8 +239,10 @@ Content-Length: [length of image file in bytes]
 
 [Binary image data]
 ```
+
         <br>
       </details>
+
   </details>
 </details>
 </details>
@@ -247,14 +254,14 @@ Content-Length: [length of image file in bytes]
 
 ## Development
 
-If you wish to work with this project, you'll have to do an offline compilation with `SQLX_OFFLINE=true cargo run`, 
+If you wish to work with this project, you'll have to do an offline compilation with `SQLX_OFFLINE=true cargo run`,
 to create the initial tables, after which you can create an `.env` file to put `DATABASE_URL` as `sqlite://data.db`
 to get compile time checks.
 
 If you've made changes to the SQL queries, you'll have to regenerate the `sqlx-data.json` file if you'd wish to do an
-successful offline compilation again. You can regenerate it with the [`sqlx cli`](https://github.com/launchbadge/sqlx) 
+successful offline compilation again. You can regenerate it with the [`sqlx cli`](https://github.com/launchbadge/sqlx)
 through `cargo sqlx prepare`
 
 ## License
 
-This project is following the [MIT license](/blob/main/LICENSE).
+This project is following the [MIT license](/blob/master/LICENSE).
