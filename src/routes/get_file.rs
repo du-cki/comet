@@ -14,7 +14,7 @@ use crate::{
     utils::{internal_error, parse_filename},
 };
 
-pub async fn get_file(
+pub async fn route(
     Path(raw_media_id): Path<String>,
     State(state): State<AppState>,
 ) -> Result<

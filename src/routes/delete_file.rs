@@ -1,6 +1,6 @@
 use axum::{
     extract::{Path, State},
-    http::{HeaderMap, StatusCode},
+    http::StatusCode,
     Json,
 };
 use tokio::fs::remove_file;
@@ -8,16 +8,13 @@ use tokio::fs::remove_file;
 use super::AppState;
 use crate::{
     models::{APIError, GenericResponse},
-    utils::{auth, internal_error},
+    utils::internal_error,
 };
 
-pub async fn delete_file(
+pub async fn route(
     Path(media_id): Path<String>,
     State(state): State<AppState>,
-    headers: HeaderMap,
 ) -> Result<(StatusCode, Json<GenericResponse>), (StatusCode, Json<APIError>)> {
-    auth(&headers, &state.config)?;
-
     let query = sqlx::query!(
         r#"SELECT file_path FROM media
             WHERE media_id = ?

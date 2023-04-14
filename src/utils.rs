@@ -1,5 +1,5 @@
 use axum::{
-    http::{HeaderMap, StatusCode},
+    http::StatusCode,
     Json,
 };
 use nanoid::nanoid;
@@ -7,24 +7,8 @@ use std::{ffi::OsStr, path::Path};
 
 use tracing::*;
 
-use crate::{models::APIError, settings::Settings};
+use crate::models::APIError;
 
-pub fn auth(headers: &HeaderMap, settings: &Settings) -> Result<(), (StatusCode, Json<APIError>)> {
-    if let Some(raw_token) = headers.get("Authorization") {
-        if let Ok(token) = raw_token.to_str() {
-            if settings.password == token {
-                return Ok(());
-            }
-        }
-    }
-
-    Err((
-        StatusCode::UNAUTHORIZED,
-        Json(APIError {
-            message: "Unauthorised".to_string(),
-        }),
-    ))
-}
 
 pub fn path_exists(path: &String) -> bool {
     if let Ok(_) = std::fs::metadata(path) {
@@ -75,3 +59,5 @@ pub fn parse_filename(filename: &String) -> (Option<&str>, Option<&str>) {
         path.extension().and_then(OsStr::to_str),
     )
 }
+
+

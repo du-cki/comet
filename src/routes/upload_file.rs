@@ -1,6 +1,6 @@
 use axum::{
     extract::{Multipart, State},
-    http::{HeaderMap, StatusCode},
+    http::StatusCode,
     Json,
 };
 use tokio::fs::File;
@@ -9,15 +9,14 @@ use tokio::io::AsyncWriteExt;
 use super::AppState;
 use crate::{
     models::{APIError, UploadResponse},
-    utils::{auth, generate_file_path, internal_error, parse_filename},
+    utils::{generate_file_path, internal_error, parse_filename},
 };
 
-pub async fn upload_file(
+pub async fn route(
     State(state): State<AppState>,
-    headers: HeaderMap,
     mut multipart: Multipart,
-) -> Result<(StatusCode, Json<UploadResponse>), (StatusCode, Json<APIError>)> {
-    auth(&headers, &state.config)?;
+) -> Result<(StatusCode, Json<UploadResponse>),
+            (StatusCode, Json<APIError>)> {
 
     while let Ok(Some(field)) = multipart.next_field().await {
         let org_file_name = field.file_name().unwrap_or_else(|| "unknown").to_string();
