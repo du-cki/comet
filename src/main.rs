@@ -1,4 +1,4 @@
-use std::net::SocketAddr;
+use std::{net::SocketAddr, sync::Arc};
 
 use tracing::info;
 
@@ -21,7 +21,7 @@ async fn main() {
     sqlx::query(schema).execute(&pool).await.unwrap();
 
     let config = Settings::new().unwrap();
-    let app = routes::create(pool, &config);
+    let app = routes::create(Arc::new(pool), &config);
 
     let addr = SocketAddr::from((config.bind_addr, config.bind_port));
     info!("listening on http://{}/", addr);

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::{
     Router,
     http::Request,
@@ -35,7 +37,7 @@ async fn authenticated_routes<B>(
         .unwrap()
 }
 
-pub fn create(pool: Pool<Sqlite>, config: &Settings) -> Router {
+pub fn create(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
     let state = AppState {
         pool,
         config: config.clone(),

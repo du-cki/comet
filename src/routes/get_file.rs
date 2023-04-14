@@ -47,7 +47,7 @@ pub async fn route(
         search_with_ext,
         ext
     )
-    .fetch_optional(&state.pool)
+    .fetch_optional(&*state.pool)
     .await
     .map_err(internal_error)?;
 
@@ -61,7 +61,7 @@ pub async fn route(
                 ",
                     media_id
                 ) // if the file has been tampered with.
-                .execute(&state.pool)
+                .execute(&*state.pool)
                 .await
                 .map_err(internal_error)?;
 

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use serde::Serialize;
 use sqlx::{Pool, Sqlite};
 
@@ -5,7 +7,7 @@ use crate::settings::Settings;
 
 #[derive(Clone, Debug)]
 pub struct AppState {
-    pub pool: Pool<Sqlite>,
+    pub pool: Arc<Pool<Sqlite>>,
     pub config: Settings,
 }
 

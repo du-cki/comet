@@ -21,7 +21,7 @@ pub async fn route(
     "#,
         media_id
     )
-    .fetch_optional(&state.pool)
+    .fetch_optional(&*state.pool)
     .await
     .map_err(internal_error)?;
 
@@ -33,7 +33,7 @@ pub async fn route(
             "#,
                 media_id
             )
-            .execute(&state.pool)
+            .execute(&*state.pool)
             .await
             .map_err(internal_error)?;
 

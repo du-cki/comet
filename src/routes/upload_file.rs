@@ -47,7 +47,7 @@ pub async fn route(
             file_ext,
             org_file_name
         )
-        .execute(&state.pool)
+        .execute(&*state.pool)
         .await
         .map_err(internal_error)?;
 
