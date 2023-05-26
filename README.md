@@ -1,143 +1,101 @@
-# Comet
+# # Comet
 
-Comet is a **blazingly fast** Content Delivery Network (CDN) node written in Rust. It's a basic project that was created as a learning exercise in Rust programming.
+Comet is a **blazingly fast** Content Delivery Network (CDN) node written in Rust.
 
-## Codebase Overview
-
-The codebase is organized into several main files:
-
-### main.rs
-
-This is the main entry point for the application. It sets up the database connection, loads the application settings, creates the application routes, and starts the server.
-
-### models.rs
-
-This file contains the data structures used in the application. It includes the AppState struct, which holds the database pool and configuration settings, and several response structs used in the API endpoints.
-
-### settings.rs
-
-This file handles the loading of application settings from the `comet-config.toml` file and the environment. The settings include server binding address and port, password, file name length, file save path, fallback content type, and API endpoints.
-
-### utils.rs
-
-This file contains several utility functions used throughout the application. These include functions for checking if a file path exists, generating a unique file path, handling internal server errors, and parsing file names.
-
-## Installation
+## ## Installation
 
 Before you start, make sure you have Rust installed on your system. If you don't have it installed, you can download it from the official website: <https://www.rust-lang.org/tools/install>
 
-1. **Clone the repository**:
+1. **Clone the repository & Navigate to it**:
 
     ```bash
     git clone https://github.com/du-cki/comet.git
-    ```
-
-2. **Navigate to the cloned repository**:
-
-    ```bash
     cd comet
     ```
 
 3. **Build the project**:
 
     ```bash
-    cargo build
+    cargo build --release
     ```
 
-4. **Run the project**:
+4. **Edit the `comet-config.toml` file and apply the necessary configurations.**
+
+5. **Run the project**:
 
     ```bash
     cargo run
     ```
+    
+    <sup>Please refer to the wiki for other ways to running & exposing this project.</sup>
 
-## Usage
+## ## Usage
 
-Once you've installed Comet, you can start using it as a CDN node. Here's a basic guide on how to use it:
+Once you've installed comet, you can start using it as a CDN node. Here's a basic guide on how to use it:
 
-### Uploading a File
+### ### Uploading a File
 
-To upload a file, you need to make a POST request to the `/upload_file` endpoint. The request should include the file you want to upload and the password set in the configuration.
+To upload a file, you need to make a POST request to the `/upload` endpoint with the file (as FormData) and the password (set in the `comet-config.toml` file) in the `Authorisation` header.
 
-### Retrieving a File
+### ### Retrieving a File
 
-To retrieve a file, make a GET request to the `/get_file/{filename}` endpoint, replacing `{filename}` with the name of the file you want to retrieve.
+To retrieve a file, make a GET request to the `/media/:media_id` endpoint, replacing `:media_id` with the name of the file you want to retrieve.
 
-### Deleting a File
+### ### Deleting a File
 
-To delete a file, make a DELETE request to the `/delete_file/{filename}` endpoint, replacing `{filename}` with the name of the file you want to delete. This request should also include the password set in the configuration.
+To delete a file, make a DELETE request to the `/delete/:media_id` endpoint, replacing `:media_id` with the relevant file name and along with the password set in the Authorisation header.
 
-Please note that the actual endpoints may vary depending on your configuration settings.
-Configuration
+## ## Configuration
 
 You can configure Comet by modifying the `comet-config.toml` file. Here are the available settings:
 
-`bind_addr`: The IP address to bind the server to.
-`bind_port`: The port to bind the server to.
-`password`: The password required to upload and delete files.
-`file_name_length`: The length of the generated file names.
-`enforce_file_extensions`: Whether to enforce file extensions when generating file names.
-`file_save_path`: The path where uploaded files will be saved.
-`fallback_content_type`: The content type to use when the file's content type cannot be determined.
-`endpoints.get_file`: The endpoint for retrieving files.
-`endpoints.upload_file`: The endpoint for uploading files.
-`endpoints.delete_file`: The endpoint for deleting files.
+`bind_addr`: The IP address to bind the server to. <br />
+`bind_port`: The port to bind the server to. <br />
+`password`: The password required to access authenticated routes (i.e. upload route). <br />
+`file_name_length`: The length of the randomly generated file names. <br />
+`enforce_file_extensions`: Whether to enforce file extensions when requesting for the file. <br />
+`file_save_path`: The path on disk where uploaded files will be saved onto. <br />
+`fallback_content_type`: The content type to use when the uploaded file's content type cannot be determined. <br />
+`endpoints.get_file`: The endpoint for retrieving files. <br />
+`endpoints.upload_file`: The endpoint for uploading files. <br />
+`endpoints.delete_file`: The endpoint for deleting files. <br />
 
-Please note that you should restart the server for the changes to take effect.
+<sup>Please note that you should restart the server for the changes to take effect. </sup>
 
-## Development
+## ## Contributing
 
-If you are interested in contributing to the development of Comet, here are some guidelines:
+If you are interested in contributing to the development of Comet, here's how to setup an development enviroment:
 
-1. **Environment Setup**
+### ### Environment Setup
 
-   Make sure you have Rust installed on your system. If not, you can download it from the official website: <https://www.rust-lang.org/tools/install>
+Make sure you have Rust installed on your system. If not, you can download it from the official website: <https://www.rust-lang.org/tools/install>
 
-2. **Clone the Repository**
+1. **Clone the Repository & Navigate to the project**
 
    Clone the repository to your local machine:
 
    ```bash
-   git clone <https://github.com/du-cki/comet.git>
+   git clone https://github.com/du-cki/comet.git
+   cd comet
+   ```
 
 2. **Build the Project**
 
-    Navigate to the cloned repository and build the project:
+    As comet uses SQLite as its database as choice, you'll need to set up the database. To do so, you will need to perform
+    an offline compilation. Build the project with the env variable `SQLX_OFFLINE` as `true`:
 
     ```bash
-    cd comet
-    cargo build
+    SQLX_OFFLINE=true cargo build
     ```
 
-4. **Database Setup**
+3. **Environment Variables**
 
-    Comet uses SQLite for its database. To set up the database, you'll need to perform an offline compilation with `SQLX_OFFLINE=true cargo run` to create the initial tables.
+    After building the project initially, you can create an `.env` file in the root of the project and set `DATABASE_URL` as `sqlite://data.db` for compile-time checks.
 
-5. **Environment Variables**
+If you make changes to any SQL queries, you'll need to regenerate the sqlx-data.json file for a successful offline compilation. You can regenerate it with the [SQLx CLI](https://github.com/launchbadge/sqlx/tree/main/sqlx-cli) through `cargo sqlx prepare`.
 
-    Create an `.env` file in the root of the project and set `DATABASE_URL` as `sqlite://data.db` for compile-time checks.
+Once you've made your changes, please provide a clear and detailed explanation of your changes and open a pull request.
 
-6. **Making Changes**
+### ### License
 
-    If you make changes to the SQL queries, you'll need to regenerate the sqlx-data.json file for successful offline compilation. You can regenerate it with the sqlx CLI through cargo sqlx prepare.
-
-7. **Testing**
-
-    Make sure to test your changes before submitting a pull request. You can run the tests with:
-
-    ```bash
-    cargo test
-    ```
-
-8. **Submitting Changes**
-
-    Once you've made your changes, push them to your fork and submit a pull request. Please provide a clear and detailed explanation of your changes in the pull request description.
-
-Please note that this is a basic guide and might not cover all the details. If you have any questions or issues, feel free to open an issue on the GitHub repository.
-
-### License
-
-Comet is licensed under the MIT license.
-
-### Contact
-
-For more information, please visit the GitHub repository at <https://github.com/du-cki/comet>.
+comet is licensed under the MIT license.
