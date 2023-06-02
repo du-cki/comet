@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
 use axum::{
-    Router,
-    http::Request,
-    extract::State,
-    response::{Response, IntoResponse},
     body::BoxBody,
+    extract::State,
+    http::Request,
     middleware::{self, Next},
+    response::{IntoResponse, Response},
     routing::{delete, get, post},
+    Router,
 };
 use sqlx::{Pool, Sqlite};
 
@@ -21,7 +21,7 @@ mod upload_file;
 async fn authenticated_routes<B>(
     State(state): State<AppState>,
     request: Request<B>,
-    next: Next<B>
+    next: Next<B>,
 ) -> Response<BoxBody> {
     if let Some(raw_token) = request.headers().get("Authorization") {
         if let Ok(token) = raw_token.to_str() {
@@ -48,19 +48,12 @@ pub fn create(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
             &format!("{}:media_id", config.endpoints.delete_file),
             delete(delete_file::route),
         )
-        .route(
-            &config.endpoints.upload_file,
-            post(upload_file::route)
-        )
-        .layer(
-            middleware::from_fn_with_state(
-                state.clone(),
-                authenticated_routes
-            )
-        )
-        .with_state(
-            state.clone()
-        );
+        .route(&config.endpoints.upload_file, post(upload_file::route))
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            authenticated_routes,
+        ))
+        .with_state(state.clone());
 
     Router::new()
         .route(

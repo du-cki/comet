@@ -1,32 +1,14 @@
 {
   "db": "SQLite",
-  "4f61bd0f6b16cb2ee4d9a2634d805348d0528b7b4f14d2211ee60b31d54528cb": {
-    "describe": {
-      "columns": [
-        {
-          "name": "file_path",
-          "ordinal": 0,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "SELECT file_path FROM media\n            WHERE media_id = ?\n    "
-  },
-  "5e4f5d477fb681bc7343df1642a0c8062c94300531017264224de0ba0a3e33cb": {
+  "789dadd27e067aeacffb3e30cf45bd2256b7a376ae6f3114b33d99fcc88cbc49": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 1
+        "Right": 6
       }
     },
-    "query": "\n                   DELETE FROM media WHERE media_id = ?\n                "
+    "query": "INSERT INTO media VALUES (unixepoch(), ?, ?, ?, ?, ?, ?)"
   },
   "b078b5d93167efa3147829cffaa5537b4f9918d6b2882f835ab6a9952edb350d": {
     "describe": {
@@ -52,7 +34,7 @@
     },
     "query": "\n        SELECT file_path, content_type FROM media\n            WHERE media_id = ? AND (\n                    CASE WHEN ? IS NULL THEN 1 ELSE file_ext = ? END\n                )\n    "
   },
-  "dbdd422cc26f5bc4325a9ffc05324b14da6d53f52456a49c14a957ca571373d8": {
+  "b601f69e1568bf0816557ee3ee71e4461d30ce0d55878fb419179aae22f33fb2": {
     "describe": {
       "columns": [],
       "nullable": [],
@@ -60,16 +42,64 @@
         "Right": 1
       }
     },
-    "query": "DELETE FROM media\n                    WHERE media_id = ?\n            "
+    "query": "\n                DELETE FROM media\n                    WHERE media_id = ?\n            "
   },
-  "ea95829435289c49972c39006237d5ff5cafd0164d452fa9982f2c5be59ce44d": {
+  "d992f5a4a2d1a844ae7d1a3a8f68dbeec0c10551ec0a4e0244ea600e9907ea82": {
+    "describe": {
+      "columns": [
+        {
+          "name": "file_path",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT file_path FROM media\n                WHERE ? = file_hash\n        "
+  },
+  "f79e1b7883c26876ce14e4b7625096c3f95c9ef78cd77b06c0bfd836ebc352d5": {
+    "describe": {
+      "columns": [
+        {
+          "name": "file_path",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "file_hash",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "count",
+          "ordinal": 2,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT file_path, file_hash,\n                (SELECT COUNT(*) FROM media WHERE file_hash = media.file_hash) AS count\n            FROM media\n                WHERE media_id = ?;\n    "
+  },
+  "f86bf82ea30758e48ed23fd0fb38fd014b33114594296328f2995f9a4a30d542": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 5
+        "Right": 1
       }
     },
-    "query": "INSERT INTO media VALUES (unixepoch(), ?, ?, ?, ?, ?)"
+    "query": "\n                    DELETE FROM media\n                        WHERE file_hash IN (\n                            SELECT file_hash FROM media\n                                WHERE media_id = ?\n                        );\n                "
   }
 }

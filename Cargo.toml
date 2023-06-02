@@ -8,8 +8,10 @@ edition = "2021"
 [dependencies]
 axum = { version = "0.6.3", features = [ "multipart" ]}
 config = { version = "0.13.3", features = ["toml"] }
+hex = { version = "0.4.3", default-features = false }
 nanoid = "0.4.0"
 serde = { version = "1.0.152", features = [ "derive" ] }
+sha2 = { version = "0.10.6", default-features = false }
 sqlx = { version = "0.6.2", features = [ "runtime-tokio-native-tls", "sqlite", "macros", "offline" ] }
 tokio = { version = "1.24.2", features = [ "macros", "rt-multi-thread" ] }
 tokio-util = { version = "0.7.7", features = ["io"] }

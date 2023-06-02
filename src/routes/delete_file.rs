@@ -16,8 +16,11 @@ pub async fn route(
     State(state): State<AppState>,
 ) -> Result<(StatusCode, Json<GenericResponse>), (StatusCode, Json<APIError>)> {
     let query = sqlx::query!(
-        r#"SELECT file_path FROM media
-            WHERE media_id = ?
+        r#"
+            SELECT file_path, file_hash,
+                (SELECT COUNT(*) FROM media WHERE file_hash = media.file_hash) AS count
+            FROM media
+                WHERE media_id = ?;
     "#,
         media_id
     )
@@ -26,24 +29,27 @@ pub async fn route(
     .map_err(internal_error)?;
 
     if let Some(record) = query {
-        if let Ok(_) = remove_file(record.file_path).await {
-            sqlx::query!(
-                r#"DELETE FROM media
+        if record.count == 1 {
+            remove_file(record.file_path).await.map_err(internal_error)?;
+        }
+
+        sqlx::query!(
+                r#"
+                DELETE FROM media
                     WHERE media_id = ?
             "#,
-                media_id
-            )
-            .execute(&*state.pool)
-            .await
-            .map_err(internal_error)?;
+            media_id
+        )
+        .execute(&*state.pool)
+        .await
+        .map_err(internal_error)?;
 
-            return Ok((
-                StatusCode::OK,
-                Json(GenericResponse {
-                    message: "Removed.".to_string(),
-                }),
-            ));
-        };
+        return Ok((
+            StatusCode::OK,
+            Json(GenericResponse {
+                message: "Removed.".to_string(),
+            }),
+        ));
     }
 
     Err((
@@ -53,3 +59,15 @@ pub async fn route(
         }),
     ))
 }
+
+// if let Ok(_) = remove_file(record.file_path).await {
+//     sqlx::query!(
+//         r#"DELETE FROM media
+//               WHERE media_id = ?
+//     "#,
+//         media_id
+//     )
+//     .execute(&*state.pool)
+//     .await
+//     .map_err(internal_error)?;
+// };

@@ -3,6 +3,8 @@ use axum::{
     http::StatusCode,
     Json,
 };
+use hex::encode;
+use sha2::{Digest, Sha256};
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 
@@ -15,9 +17,7 @@ use crate::{
 pub async fn route(
     State(state): State<AppState>,
     mut multipart: Multipart,
-) -> Result<(StatusCode, Json<UploadResponse>),
-            (StatusCode, Json<APIError>)> {
-
+) -> Result<(StatusCode, Json<UploadResponse>), (StatusCode, Json<APIError>)> {
     while let Ok(Some(field)) = multipart.next_field().await {
         let org_file_name = field.file_name().unwrap_or_else(|| "unknown").to_string();
 
@@ -28,22 +28,44 @@ pub async fn route(
             .unwrap_or_else(|| &state.config.fallback_content_type)
             .to_string();
 
-        let (file_name, fp) = generate_file_path(
+        let data = field.bytes().await.map_err(internal_error)?;
+        let mut hash = Sha256::new();
+
+        hash.update(&data);
+
+        let file_hash = encode(&hash.finalize()[..]);
+
+        let (file_name, mut fp) = generate_file_path(
             state.config.file_name_length,
             state.config.file_save_path,
+            &file_hash,
             &file_ext,
         );
 
-        let data = field.bytes().await.map_err(internal_error)?;
+        let file_exists = sqlx::query!(
+            r#"
+            SELECT file_path FROM media
+                WHERE ? = file_hash
+        "#,
+            file_hash
+        )
+        .fetch_optional(&*state.pool)
+        .await
+        .map_err(internal_error)?;
 
-        let mut file = File::create(&fp).await.map_err(internal_error)?;
-        file.write_all(&data).await.map_err(internal_error)?;
+        if let Some(record) = file_exists {
+            fp = record.file_path;
+        } else {
+            let mut file = File::create(&fp).await.map_err(internal_error)?;
+            file.write_all(&data).await.map_err(internal_error)?;
+        }
 
         sqlx::query!(
-            "INSERT INTO media VALUES (unixepoch(), ?, ?, ?, ?, ?)",
+            "INSERT INTO media VALUES (unixepoch(), ?, ?, ?, ?, ?, ?)",
             file_name,
             fp,
             content_type,
+            file_hash,
             file_ext,
             org_file_name
         )

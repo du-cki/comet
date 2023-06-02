@@ -56,9 +56,13 @@ pub async fn route(
             Ok(file) => file,
             Err(_) => {
                 sqlx::query!(
-                    "
-                   DELETE FROM media WHERE media_id = ?
-                ",
+                    r#"
+                    DELETE FROM media
+                        WHERE file_hash IN (
+                            SELECT file_hash FROM media
+                                WHERE media_id = ?
+                        );
+                "#,
                     media_id
                 ) // if the file has been tampered with.
                 .execute(&*state.pool)

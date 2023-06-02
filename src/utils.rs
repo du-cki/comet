@@ -1,23 +1,10 @@
-use axum::{
-    http::StatusCode,
-    Json,
-};
+use axum::{http::StatusCode, Json};
 use nanoid::nanoid;
 use std::{ffi::OsStr, path::Path};
 
 use tracing::*;
 
 use crate::models::APIError;
-
-
-pub fn path_exists(path: &String) -> bool {
-    if let Ok(_) = std::fs::metadata(path) {
-        // i doub't this would block much.
-        return true;
-    };
-
-    false
-}
 
 pub fn internal_error<E>(err: E) -> (StatusCode, Json<APIError>)
 where
@@ -35,17 +22,14 @@ where
 pub fn generate_file_path(
     length: usize,
     base_path: String,
+    file_hash: &String,
     raw_file_ext: &Option<&str>,
 ) -> (String, String) {
     let file_name = nanoid!(length);
-    let mut fp = format!("{}{}", base_path, file_name);
+    let mut fp = format!("{}{}", base_path, file_hash);
 
     if let Some(file_ext) = raw_file_ext {
         fp = fp + "." + file_ext; // in cases of file not having a file extension, we can safely handle it like this.
-    }
-
-    if path_exists(&fp) {
-        return generate_file_path(length, base_path, raw_file_ext);
     }
 
     (file_name, fp)
@@ -59,5 +43,3 @@ pub fn parse_filename(filename: &String) -> (Option<&str>, Option<&str>) {
         path.extension().and_then(OsStr::to_str),
     )
 }
-
-
