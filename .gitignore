@@ -20,5 +20,8 @@ Cargo.lock
 # have a database with the tables setup correctly.
 .env
 
+# auto-generated buffers by emacs
+*.tmp
+
 # All the files on the node.
 media/
