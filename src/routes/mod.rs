@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{
     body::BoxBody,
-    extract::State,
+    extract::{State, DefaultBodyLimit},
     http::Request,
     middleware::{self, Next},
     response::{IntoResponse, Response},
@@ -43,12 +43,20 @@ pub fn create(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
         config: config.clone(),
     };
 
+    let file_size_limit = {
+        if config.file_size_limit > 0 {
+            DefaultBodyLimit::max(config.file_size_limit)
+        } else {
+            DefaultBodyLimit::disable()
+        }
+    };
+
     let inner = Router::new() // these will be authenticated routes.
         .route(
-            &format!("{}:media_id", config.endpoints.delete_file),
+            &format!("{}:media_id", state.config.endpoints.delete_file),
             delete(delete_file::route),
         )
-        .route(&config.endpoints.upload_file, post(upload_file::route))
+        .route(&state.config.endpoints.upload_file, post(upload_file::route))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             authenticated_routes,
@@ -56,10 +64,11 @@ pub fn create(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
         .with_state(state.clone());
 
     Router::new()
+        .merge(inner)
+        .layer(file_size_limit)
         .route(
-            &format!("{}:media_id", config.endpoints.get_file),
+            &format!("{}:media_id", state.config.endpoints.get_file),
             get(get_file::route),
         )
-        .merge(inner)
         .with_state(state)
 }

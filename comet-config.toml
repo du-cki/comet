@@ -20,6 +20,11 @@ file_name_length = 8
 # (forward) slash (/). If you're planning to dockerise, leave this as is.
 file_save_path = "media/"
 
+# This config is used to set a limit to the files being uploaded, this value takes in bytes.
+# So, a simple equation to get 5MB is (5 * 1024 * 1024), by default this config is 50MB. If
+# you pass in ``0`` as the config, the limit would be disabled.
+file_size_limit = 52428800
+
 # Should the serve endpoint require an extension along with the file UID.
 # for instance, the get route would be `/YbdlPsdg.png` instead of `/YbdlPsdg`
 # enabling this would make the get route more explicit.

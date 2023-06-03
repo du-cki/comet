@@ -10,6 +10,7 @@ pub struct Settings {
     pub enforce_file_extensions: bool,
     pub file_save_path: String,
     pub fallback_content_type: String,
+    pub file_size_limit: usize,
     pub endpoints: Endpoints,
 }
 
