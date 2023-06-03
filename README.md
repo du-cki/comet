@@ -53,8 +53,9 @@ You can configure Comet by modifying the `comet-config.toml` file. Here are the 
 `bind_port`: The port to bind the server to. <br />
 `password`: The password required to access authenticated routes (i.e. upload route). <br />
 `file_name_length`: The length of the randomly generated file names. <br />
-`enforce_file_extensions`: Whether to enforce file extensions when requesting for the file. <br />
 `file_save_path`: The path on disk where uploaded files will be saved onto. <br />
+`file_size_limit`: The file upload limit, if you pass in `0`, this will be disabled. <br /> 
+`enforce_file_extensions`: Whether to enforce file extensions when requesting for the file. <br />
 `fallback_content_type`: The content type to use when the uploaded file's content type cannot be determined. <br />
 `endpoints.get_file`: The endpoint for retrieving files. <br />
 `endpoints.upload_file`: The endpoint for uploading files. <br />
