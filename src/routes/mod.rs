@@ -17,6 +17,7 @@ use crate::settings::Settings;
 mod delete_file;
 mod get_file;
 mod upload_file;
+mod ping;
 
 async fn authenticated_routes<B>(
     State(state): State<AppState>,
@@ -69,6 +70,10 @@ pub fn create(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
         .route(
             &format!("{}:media_id", state.config.endpoints.get_file),
             get(get_file::route),
+        )
+        .route(
+            &state.config.endpoints.ping,
+            get(ping::route)
         )
         .with_state(state)
 }

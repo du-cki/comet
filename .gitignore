@@ -25,3 +25,6 @@ Cargo.lock
 
 # All the files on the node.
 media/
+
+# Config file, to prevent overwrites on update.
+comet-config.toml

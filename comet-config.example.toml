@@ -34,8 +34,10 @@ enforce_file_extensions = true
 # Its fine for most cases, so just leaving it as is is fine.
 fallback_content_type = "application/octet-stream"
 
+
 # The path for each endpoint can be specifiec below, leaving it as is is fine.
 [endpoints]
 get_file = "/media/" # Endpoint for serving files, Must end with (forward) slash [/].
 delete_file = "/delete/" # Endpoint for deleting files, Must end with (forward) slash [/].
 upload_file = "/upload" # Endpoint for uploading files.
+ping = "/ping"

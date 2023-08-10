@@ -59,15 +59,3 @@ pub async fn route(
         }),
     ))
 }
-
-// if let Ok(_) = remove_file(record.file_path).await {
-//     sqlx::query!(
-//         r#"DELETE FROM media
-//               WHERE media_id = ?
-//     "#,
-//         media_id
-//     )
-//     .execute(&*state.pool)
-//     .await
-//     .map_err(internal_error)?;
-// };

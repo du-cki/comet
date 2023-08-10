@@ -19,6 +19,7 @@ pub struct Endpoints {
     pub get_file: String,
     pub upload_file: String,
     pub delete_file: String,
+    pub ping: String,
 }
 
 impl Settings {

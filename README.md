@@ -2,7 +2,7 @@
 
 Comet is a **blazingly fast** Content Delivery Network (CDN) node written in Rust.
 
-## ## Installation
+## Installation
 
 Before you start, make sure you have Rust installed on your system. If you don't have it installed, you can download it from the official website: <https://www.rust-lang.org/tools/install>
 
@@ -29,7 +29,7 @@ Before you start, make sure you have Rust installed on your system. If you don't
     
     <sup>Please refer to the wiki for other ways to running & exposing this project.</sup>
 
-## ## Usage
+## Usage
 
 Once you've installed comet, you can start using it as a CDN node. Here's a basic guide on how to use it:
 
@@ -45,9 +45,10 @@ To retrieve a file, make a GET request to the `/media/:media_id` endpoint, repla
 
 To delete a file, make a DELETE request to the `/delete/:media_id` endpoint, replacing `:media_id` with the relevant file name and along with the password set in the Authorisation header.
 
-## ## Configuration
+## Configuration
 
-You can configure Comet by modifying the `comet-config.toml` file. Here are the available settings:
+You can configure Comet by modifying the `comet-config.example.toml` file. Here are the available settings 
+(don't forget to rename the file into `comet-config.toml`):
 
 `bind_addr`: The IP address to bind the server to. <br />
 `bind_port`: The port to bind the server to. <br />
@@ -63,11 +64,11 @@ You can configure Comet by modifying the `comet-config.toml` file. Here are the 
 
 <sup>Please note that you should restart the server for the changes to take effect. </sup>
 
-## ## Contributing
+## Contributing
 
 If you are interested in contributing to the development of Comet, here's how to setup an development enviroment:
 
-### Environment Setup
+### Dev Environment Setup
 
 Make sure you have Rust installed on your system. If not, you can download it from the official website: <https://www.rust-lang.org/tools/install>
 
