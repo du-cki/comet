@@ -82,7 +82,7 @@ const sortType: Ref<SortBy | string> = ref(
               </button>
 
               <template #popper>
-                <ContextMenu :is_logged_in="true" :folder_id="folder.folder_id" />
+                <ContextMenu :is_logged_in="false" :folder_id="folder.folder_id" />
               </template>
             </Dropdown>
           </td>
@@ -113,7 +113,7 @@ const sortType: Ref<SortBy | string> = ref(
               </button>
 
               <template #popper>
-                <ContextMenu :is_logged_in="true" :file_id="file.file_id" />
+                <ContextMenu :is_logged_in="false" :file_id="file.file_id" />
               </template>
             </Dropdown>
           </td>

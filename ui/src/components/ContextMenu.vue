@@ -7,10 +7,7 @@ defineProps<{
   folder_id?: number
 }>()
 
-enum ButtonType {
-  Button,
-  Divider
-}
+enum ButtonType { Button, Divider }
 
 const buttons = [
   {
