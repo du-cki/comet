@@ -1,5 +1,6 @@
-use axum::{http::StatusCode, Json};
 use nanoid::nanoid;
+use axum::{http::StatusCode, Json};
+
 use std::{ffi::OsStr, path::Path};
 
 use tracing::*;
@@ -42,4 +43,13 @@ pub fn parse_filename(filename: &String) -> (Option<&str>, Option<&str>) {
         path.file_stem().and_then(OsStr::to_str),
         path.extension().and_then(OsStr::to_str),
     )
+}
+
+#[macro_export]
+macro_rules! json_message {
+    ($($key:expr => $value:expr),* $(,)?) => {
+        axum::extract::ws::Message::Text(serde_json::json!({
+            $($key: $value,)*
+        }).to_string())
+    };
 }
