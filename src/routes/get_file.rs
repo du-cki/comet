@@ -25,11 +25,9 @@ pub async fn route(
     (StatusCode, Json<APIError>),
 > {
     let mut ext: Option<&str> = None;
-    let mut search_with_ext = false;
     let mut file_name = raw_file_name.clone();
 
     if state.config.enforce_file_extensions {
-        search_with_ext = true;
         if let (Some(parsed_file_name), Some(parsed_ext)) = parse_filename(&raw_file_name) {
             file_name = parsed_file_name.to_string(); // strips off the filename.
             ext = Some(parsed_ext);
@@ -44,8 +42,7 @@ pub async fn route(
                 )
     ",
         file_name,
-        search_with_ext,
-        ext
+        ext, ext
     )
     .fetch_optional(&*state.pool)
     .await
@@ -72,7 +69,7 @@ pub async fn route(
                 return Err((
                     StatusCode::NOT_FOUND,
                     Json(APIError {
-                        message: "File not found.".to_owned(),
+                        message: "file not found".to_owned(),
                     }),
                 ));
             }
@@ -89,7 +86,7 @@ pub async fn route(
     Err((
         StatusCode::NOT_FOUND,
         Json(APIError {
-            message: "File not found.".to_owned(),
+            message: "file not found".to_owned(),
         }),
     ))
 }
