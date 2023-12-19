@@ -81,9 +81,20 @@ pub fn create(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
             &format!("{}:file_name", state.config.endpoints.get_file),
             get(get_file::route),
         )
-        .route(&state.config.endpoints.ping, get(ping::route))
-        .route("/api/ws/pineapple", get(pineapple::route))
-        .nest_service("/assets/", ServeDir::new("ui/dist/assets"))
-        .fallback_service(ServeFile::new("ui/dist/index.html"))
+        .route(
+            &state.config.endpoints.ping,
+            get(ping::route)
+        )
+        .route(
+            "/api/ws/pineapple",
+            get(pineapple::route)
+        )
+        .nest_service(
+            "/assets/",
+            ServeDir::new("ui/dist/assets")
+        )
+        .fallback_service(
+            ServeFile::new("ui/dist/index.html")
+        )
         .with_state(state)
 }
