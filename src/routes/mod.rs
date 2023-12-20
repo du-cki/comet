@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{
     body::BoxBody,
-    extract::{State, DefaultBodyLimit},
+    extract::{DefaultBodyLimit, State},
     http::Request,
     middleware::{self, Next},
     response::{IntoResponse, Response},
@@ -11,13 +11,17 @@ use axum::{
 };
 use sqlx::{Pool, Sqlite};
 
-use crate::models::AppState;
+use tokio::sync::broadcast;
+use tower_http::services::{ServeDir, ServeFile};
+
+use crate::models::{AppState, FileRecord};
 use crate::settings::Settings;
 
 mod delete_file;
 mod get_file;
-mod upload_file;
+mod pineapple;
 mod ping;
+mod upload_file;
 
 async fn authenticated_routes<B>(
     State(state): State<AppState>,
@@ -39,9 +43,12 @@ async fn authenticated_routes<B>(
 }
 
 pub fn create(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
+    let (sx, _) = broadcast::channel::<FileRecord>(1);
+
     let state = AppState {
         pool,
         config: config.clone(),
+        sx,
     };
 
     let file_size_limit = {
@@ -54,10 +61,13 @@ pub fn create(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
 
     let inner = Router::new() // these will be authenticated routes.
         .route(
-            &format!("{}:media_id", state.config.endpoints.delete_file),
+            &format!("{}:file_name", state.config.endpoints.delete_file),
             delete(delete_file::route),
         )
-        .route(&state.config.endpoints.upload_file, post(upload_file::route))
+        .route(
+            &state.config.endpoints.upload_file,
+            post(upload_file::route),
+        )
         .layer(middleware::from_fn_with_state(
             state.clone(),
             authenticated_routes,
@@ -68,12 +78,23 @@ pub fn create(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
         .merge(inner)
         .layer(file_size_limit)
         .route(
-            &format!("{}:media_id", state.config.endpoints.get_file),
+            &format!("{}:file_name", state.config.endpoints.get_file),
             get(get_file::route),
         )
         .route(
             &state.config.endpoints.ping,
             get(ping::route)
+        )
+        .route(
+            "/api/ws/pineapple",
+            get(pineapple::route)
+        )
+        .nest_service(
+            "/assets/",
+            ServeDir::new("ui/dist/assets")
+        )
+        .fallback_service(
+            ServeFile::new("ui/dist/index.html")
         )
         .with_state(state)
 }

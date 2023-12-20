@@ -12,7 +12,7 @@ use crate::{
 };
 
 pub async fn route(
-    Path(media_id): Path<String>,
+    Path(file_name): Path<String>,
     State(state): State<AppState>,
 ) -> Result<(StatusCode, Json<GenericResponse>), (StatusCode, Json<APIError>)> {
     let query = sqlx::query!(
@@ -20,9 +20,9 @@ pub async fn route(
             SELECT file_path, file_hash,
                 (SELECT COUNT(*) FROM media WHERE file_hash = media.file_hash) AS count
             FROM media
-                WHERE media_id = ?;
+                WHERE file_name = ?;
     "#,
-        media_id
+        file_name
     )
     .fetch_optional(&*state.pool)
     .await
@@ -36,9 +36,9 @@ pub async fn route(
         sqlx::query!(
                 r#"
                 DELETE FROM media
-                    WHERE media_id = ?
+                    WHERE file_name = ?
             "#,
-            media_id
+            file_name
         )
         .execute(&*state.pool)
         .await

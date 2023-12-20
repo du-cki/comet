@@ -15,7 +15,7 @@ use crate::{
 };
 
 pub async fn route(
-    Path(raw_media_id): Path<String>,
+    Path(raw_file_name): Path<String>,
     State(state): State<AppState>,
 ) -> Result<
     (
@@ -25,13 +25,11 @@ pub async fn route(
     (StatusCode, Json<APIError>),
 > {
     let mut ext: Option<&str> = None;
-    let mut search_with_ext = false;
-    let mut media_id = raw_media_id.clone();
+    let mut file_name = raw_file_name.clone();
 
     if state.config.enforce_file_extensions {
-        search_with_ext = true;
-        if let (Some(parsed_media_id), Some(parsed_ext)) = parse_filename(&raw_media_id) {
-            media_id = parsed_media_id.to_string(); // strips off the filename.
+        if let (Some(parsed_file_name), Some(parsed_ext)) = parse_filename(&raw_file_name) {
+            file_name = parsed_file_name.to_string(); // strips off the filename.
             ext = Some(parsed_ext);
         }
     }
@@ -39,12 +37,11 @@ pub async fn route(
     let res = sqlx::query!(
         "
         SELECT file_path, content_type FROM media
-            WHERE media_id = ? AND (
-                    CASE WHEN ? IS NULL THEN 1 ELSE file_ext = ? END
+            WHERE file_name = $1 AND (
+                    CASE WHEN $2 IS NULL THEN 1 ELSE file_ext = $2 END
                 )
     ",
-        media_id,
-        search_with_ext,
+        file_name,
         ext
     )
     .fetch_optional(&*state.pool)
@@ -60,10 +57,10 @@ pub async fn route(
                     DELETE FROM media
                         WHERE file_hash IN (
                             SELECT file_hash FROM media
-                                WHERE media_id = ?
+                                WHERE file_name = ?
                         );
                 "#,
-                    media_id
+                    file_name
                 ) // if the file has been tampered with.
                 .execute(&*state.pool)
                 .await
@@ -72,7 +69,7 @@ pub async fn route(
                 return Err((
                     StatusCode::NOT_FOUND,
                     Json(APIError {
-                        message: "File not found.".to_owned(),
+                        message: "file not found".to_owned(),
                     }),
                 ));
             }
@@ -89,7 +86,7 @@ pub async fn route(
     Err((
         StatusCode::NOT_FOUND,
         Json(APIError {
-            message: "File not found.".to_owned(),
+            message: "file not found".to_owned(),
         }),
     ))
 }

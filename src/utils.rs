@@ -1,5 +1,6 @@
-use axum::{http::StatusCode, Json};
 use nanoid::nanoid;
+use axum::{http::StatusCode, Json};
+
 use std::{ffi::OsStr, path::Path};
 
 use tracing::*;
@@ -17,6 +18,14 @@ where
             message: "Something went wrong.".to_string(),
         }),
     )
+}
+
+pub fn strip_first_and_last(target: String) -> String {
+    let mut chars = target.chars();
+    chars.next();
+    chars.next_back();
+
+    chars.collect()
 }
 
 pub fn generate_file_path(
@@ -42,4 +51,13 @@ pub fn parse_filename(filename: &String) -> (Option<&str>, Option<&str>) {
         path.file_stem().and_then(OsStr::to_str),
         path.extension().and_then(OsStr::to_str),
     )
+}
+
+#[macro_export]
+macro_rules! json_message {
+    ($($key:expr => $value:expr),* $(,)?) => {
+        axum::extract::ws::Message::Text(serde_json::json!({
+            $($key: $value,)*
+        }).to_string())
+    };
 }

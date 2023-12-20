@@ -9,6 +9,7 @@ pub struct Settings {
     pub file_name_length: usize,
     pub enforce_file_extensions: bool,
     pub file_save_path: String,
+    pub default_public: bool,
     pub fallback_content_type: String,
     pub file_size_limit: usize,
     pub endpoints: Endpoints,
