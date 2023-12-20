@@ -71,9 +71,9 @@ pub async fn route(
                  file_path, content_type, file_hash,
                  file_ext, original_file_name
                ) VALUES (
-                   unixepoch(), ?, ?,
-                   ?, ?, ?,
-                   ?, ?
+                   unixepoch(), $1, $2,
+                   $3, $4, $5,
+                   $6, $7
                ) RETURNING
                  original_file_name, file_name, file_ext,
                  folder_id, file_id, uploaded_at AS last_updated

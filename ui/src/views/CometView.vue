@@ -8,48 +8,39 @@ import FileTable from '@/components/FileTable.vue'
 import type Client from '@/lib/comet'
 import type { FileT } from '@/lib/comet/types'
 
-let path = window.location.hash.substring(1)
-if (!path) {
-  path = '/'
-} else if (path === '/') {
-  // clear it if it's the root, to keep it clean.
-  updateState({
-    hash: ''
-  })
-}
+let path = window.location.hash.substring(1) || '/'
 
 const files = ref<FileT[]>([])
 const client = inject('client') as Client
 
-const openFile = (file: string) => {
-  path = file
-
+const openFile = async (file: string) => {
   updateState({
-    title: `${path} - Comet`,
-    hash: path
+    title: `${file} - Comet`,
+    hash: file == '/' ? '' : file
   })
 
-  client.requestFiles(path).then((res) => {
-    files.value = res.files
-  })
+  const req = await client.requestFiles(file)
+  files.value = req.files
+
+  path = file
 }
 
 openFile(path)
 </script>
 
 <template>
-  <main class="pt-8">
+  <main class="py-8">
     <FileTable
       :files="files"
       :back="path !== '/'"
       @open-file="
-        (file: FileT) => {
+        async (file: FileT) => {
           if (file.file_type === 'FOLDER') {
             if (file.name === '...') {
-              return openFile(path.substring(0, path.lastIndexOf('/')) || '/')
+              return await openFile(path.substring(0, path.lastIndexOf('/')) || '/')
             }
 
-            return openFile(`${path.endsWith('/') ? path : path + '/'}${file.name}`)
+            return await openFile(`${path.endsWith('/') ? path : path + '/'}${file.name}`)
           }
         }
       "

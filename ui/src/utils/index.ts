@@ -11,9 +11,9 @@ const url = (relativePath: string): string => {
 const sleep = (seconds: number) => new Promise((resolve) => setTimeout(resolve, seconds * 1000))
 
 const updateState = ({ hash, title }: { hash?: string; title?: string }) => {
-  // window.history.pushState({ path: hash }, '', hash)
-  hash && (window.location.hash = hash)
-  title && (document.title = title)
+  // the typeof is required, but '' == false which would prevent me from resetting the hash
+  if (typeof hash === 'string') window.location.hash = hash
+  if (title) document.title = ''
 }
 
 export { sortFiles, SortBy, setSortType, url, sleep, updateState }
