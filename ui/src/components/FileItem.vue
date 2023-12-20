@@ -29,8 +29,10 @@ defineProps<{
     </p>
   </td>
 
-  <td v-if="time" class="pr-2 md:pr-3 pl-2 text-gray-500 text-right">
-    {{ moment.unix(file.last_updated).fromNow() }}
+  <td class="pr-2 md:pr-3 pl-2 text-right">
+    <span class="text-gray-500" v-if="time">
+      {{ moment.unix(file.last_updated).fromNow() }}
+    </span>
   </td>
 
   <td class="pr-2 pl-2 flex justify-center">
