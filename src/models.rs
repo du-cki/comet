@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use sqlx::{Pool, Sqlite};
 
+use crate::utils::strip_first_and_last;
 use crate::settings::Settings;
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -22,7 +23,11 @@ pub enum Events {
 
 impl fmt::Display for Events {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", serde_json::to_string(self).unwrap())
+        write!(
+            f,
+            "{}",
+            strip_first_and_last(serde_json::to_string(self) .unwrap()) // because the parsed JSON would be in string format, we need to strip off the string.
+        )
     }
 }
 
@@ -41,9 +46,9 @@ pub struct Folder {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct File {
-    pub file_id: i64,
-    pub file_name: String,
-    pub file_ext: Option<String>,
+    pub id: Option<i64>,
+    pub name: Option<String>,
+    pub file_type: Option<String>,
     pub last_updated: Option<i32>,
 }
 

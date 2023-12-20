@@ -70,20 +70,21 @@ async fn query_folder(
 
     let folder_query = sqlx::query_as!(Folder, r#"
         WITH RECURSIVE tmp(id, path) AS (
-           SELECT NULL, '/'
-           UNION ALL
+            SELECT NULL, '/'
+            UNION ALL
 
-           SELECT folder_id, '/' || folder_name
-           FROM folders
-           WHERE parent_folder_id IS NULL
+            SELECT folder_id, '/' || folder_name
+            FROM folders
+            WHERE
+                parent_folder_id IS NULL
+            UNION ALL
 
-           UNION ALL
-
-           SELECT
-               folder_id,
-               tmp.path || '/' || folders.folder_name AS name
-           FROM folders
-               JOIN tmp ON folders.parent_folder_id = tmp.id
+            SELECT
+                folder_id,
+                tmp.path || '/' || folders.folder_name AS name
+            FROM
+                folders
+                JOIN tmp ON folders.parent_folder_id = tmp.id
         ) SELECT * FROM tmp WHERE tmp.path = $1;
     "#,
         request.data
@@ -92,11 +93,23 @@ async fn query_folder(
 
     if let Some(folder) = folder_query {
         let file_query = sqlx::query_as!(File, r#"
-            SELECT file_name, file_ext, file_id,
+            SELECT file_id as id,
+                file_name || COALESCE('.' || file_ext, '') as name,
+                'FILE' AS file_type,
                 COALESCE(last_updated_at, uploaded_at) AS last_updated
             FROM media
                 WHERE is_public = 1
-                    AND folder_id IS $1;
+                    AND folder_id is $1
+
+            UNION
+
+            SELECT folder_id as id,
+                folder_name as name,
+                 'FOLDER' AS file_type,
+                (SELECT MAX(COALESCE(last_updated_at, uploaded_at)) FROM media) as last_updated
+            FROM folders
+                WHERE is_public = 1
+                    AND parent_folder_id is $1;
         "#,
             folder.id
         )

@@ -1,19 +1,16 @@
 <script setup lang="ts">
+import FileItem from './FileItem.vue'
 import { ref, type Ref } from 'vue'
-import moment from 'moment'
-
-import { Dropdown } from 'floating-vue'
-
-import { FileIcon, FolderIcon, ThreeDots } from '@/icons'
-import ContextMenu from '@/components/ContextMenu.vue'
 
 import { sortFiles, SortBy, setSortType } from '@/utils'
-import type { FileT, FolderT } from '@/lib/comet/types'
+import type { FileT } from '@/lib/comet/types'
 
 defineProps<{
   files: FileT[]
-  folders: FolderT[]
+  back: boolean
 }>()
+
+defineEmits(['openFile'])
 
 const storedSortType = localStorage.getItem('sortType')
 const sortType: Ref<SortBy | string> = ref(
@@ -28,95 +25,54 @@ const sortType: Ref<SortBy | string> = ref(
         class="divider w-full rounded-lg overflow-hidden text-sm lg:text-lg select-none cursor-default"
       >
         <tr class="text-gray-500 text-sm font-semibold bg-gray-50">
-          <th
-            class="pl-3 py-1 text-left hover:cursor-pointer select-none"
-            @click="
-              () => {
-                sortType = setSortType(
-                  sortType === SortBy.NameAsc ? SortBy.NameDesc : SortBy.NameAsc
-                )
-              }
-            "
-          >
-            Name
+          <th class="pl-3 py-1 text-left select-none">
+            <span
+              class="hover:cursor-pointer"
+              @click="
+                () => {
+                  sortType = setSortType(
+                    sortType === SortBy.NameAsc ? SortBy.NameDesc : SortBy.NameAsc
+                  )
+                }
+              "
+            >
+              Name
+            </span>
           </th>
 
-          <th
-            class="pr-2 md:pr-3 text-right hover:cursor-pointer select-none"
-            @click="
-              () => {
-                sortType = setSortType(
-                  sortType === SortBy.UpdatedAsc ? SortBy.UpdatedDesc : SortBy.UpdatedAsc
-                )
-              }
-            "
-          >
-            Last Updated
+          <th class="pr-2 md:pr-3 text-right select-none">
+            <span
+              class="hover:cursor-pointer"
+              @click="
+                () => {
+                  sortType = setSortType(
+                    sortType === SortBy.UpdatedAsc ? SortBy.UpdatedDesc : SortBy.UpdatedAsc
+                  )
+                }
+              "
+            >
+              Last Updated
+            </span>
           </th>
 
           <th class="w-1 bg-gray-100 opacity-50" />
         </tr>
 
-        <tr class="hover:bg-gray-100" v-for="folder in folders" :key="folder.folder_id">
-          <td class="flex items-center py-2 pl-3">
-            <FolderIcon class="fill-[#768390]" />
-            <p class="pl-2 text-gray-700 truncate text-ellipsis">
-              {{ folder.folder_name }}
-            </p>
-          </td>
-
-          <td class="pr-2 md:pr-3 pl-2 text-gray-500 text-right">
-            {{
-              folder.last_updated
-                ? moment.unix(folder.last_updated).fromNow()
-                : 'N/A' /* in-cases of there being no files inside the folder. */
-            }}
-          </td>
-
-          <td class="pr-2 pl-2 flex justify-center">
-            <Dropdown placement="left-start">
-              <button>
-                <ThreeDots
-                  class="h-4 fill-gray-500 hover:fill-gray-900 active:fill-gray-900 transition-all hover:cursor-pointer"
-                />
-              </button>
-
-              <template #popper>
-                <ContextMenu :is_logged_in="false" :folder_id="folder.folder_id" />
-              </template>
-            </Dropdown>
-          </td>
+        <tr v-if="back" class="hover:bg-gray-100">
+          <FileItem
+            :file="{
+              name: '...',
+              id: 0,
+              file_type: 'FOLDER',
+              last_updated: 0
+            }"
+            :time="false"
+            @open-file="$emit('openFile', $event)"
+          />
         </tr>
 
-        <tr
-          class="hover:bg-gray-100"
-          v-for="file in sortFiles(files, sortType)"
-          :key="file.file_id"
-        >
-          <td class="flex items-center py-2 pl-3">
-            <FileIcon class="fill-[#768390]" />
-            <p class="pl-2 text-gray-700 truncate text-ellipsis">
-              {{ `${file.file_name}.${file.file_ext}` }}
-            </p>
-          </td>
-
-          <td class="pr-2 md:pr-3 pl-2 text-gray-500 text-right">
-            {{ moment.unix(file.last_updated).fromNow() }}
-          </td>
-
-          <td class="pr-2 pl-2 flex justify-center">
-            <Dropdown placement="left-start">
-              <button>
-                <ThreeDots
-                  class="h-4 fill-gray-500 hover:fill-gray-900 active:fill-gray-900 transition-all hover:cursor-pointer"
-                />
-              </button>
-
-              <template #popper>
-                <ContextMenu :is_logged_in="false" :file_id="file.file_id" />
-              </template>
-            </Dropdown>
-          </td>
+        <tr v-for="file in sortFiles(files, sortType)" class="hover:bg-gray-100" :key="file.id">
+          <FileItem :file="file" :time="true" @open-file="$emit('openFile', $event)" />
         </tr>
       </table>
     </div>
@@ -128,4 +84,3 @@ const sortType: Ref<SortBy | string> = ref(
   @apply divide-y divide-gray-200;
 }
 </style>
-@/lib/comet/types

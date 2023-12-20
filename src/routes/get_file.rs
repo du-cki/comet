@@ -37,12 +37,12 @@ pub async fn route(
     let res = sqlx::query!(
         "
         SELECT file_path, content_type FROM media
-            WHERE file_name = ? AND (
-                    CASE WHEN ? IS NULL THEN 1 ELSE file_ext = ? END
+            WHERE file_name = $1 AND (
+                    CASE WHEN $2 IS NULL THEN 1 ELSE file_ext = $2 END
                 )
     ",
         file_name,
-        ext, ext
+        ext
     )
     .fetch_optional(&*state.pool)
     .await

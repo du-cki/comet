@@ -20,6 +20,14 @@ where
     )
 }
 
+pub fn strip_first_and_last(target: String) -> String {
+    let mut chars = target.chars();
+    chars.next();
+    chars.next_back();
+
+    chars.collect()
+}
+
 pub fn generate_file_path(
     length: usize,
     base_path: String,

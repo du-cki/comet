@@ -26,30 +26,6 @@ CREATE TABLE IF NOT EXISTS folders (
     FOREIGN KEY (parent_folder_id) REFERENCES folders(folder_id)
 );
 
-CREATE VIEW folder_paths AS WITH RECURSIVE tmp(id, path) AS (
-    SELECT
-        NULL,
-        '/'
-    UNION
-    ALL
-
-    SELECT
-        folder_id,
-        '/' || folder_name
-    FROM
-        folders
-    WHERE
-        parent_folder_id IS NULL
-    UNION
-    ALL
-
-    SELECT
-        folder_id,
-        tmp.path || '/' || folders.folder_name AS name
-    FROM
-        folders
-        JOIN tmp ON folders.parent_folder_id = tmp.id
-);
 
 -- database side checks
 -- As much as I would like to make this trigger for both INSERT and UPDATE at a time,
