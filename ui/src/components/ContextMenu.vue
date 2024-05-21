@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { toast } from 'vue3-toastify'
 import { ShareIcon, DownloadIcon, RenameIcon, FolderOpenIcon, DeleteIcon, InfoIcon } from '@/icons'
+
+import 'vue3-toastify/dist/index.css'
 
 defineProps<{
   is_logged_in: boolean
@@ -7,7 +10,10 @@ defineProps<{
   folder_id?: number
 }>()
 
-enum ButtonType { Button, Divider }
+enum ButtonType {
+  Button,
+  Divider
+}
 
 const buttons = [
   {
@@ -15,7 +21,13 @@ const buttons = [
     icon: ShareIcon,
     type: ButtonType.Button,
     callback: () => {
-      console.log('shared')
+      toast('Copied to clipboard', {
+        type: 'default',
+        position: 'bottom-right',
+        autoClose: 2000,
+        hideProgressBar: true,
+        transition: 'slide'
+      })
     }
   },
   {
@@ -82,7 +94,7 @@ const buttons = [
           <div v-if="button.type === ButtonType.Button">
             <button
               :class="`item ${button.customColour || 'text-gray-700'}`"
-              :on-click="button.callback"
+              v-on:click="button.callback"
             >
               <component
                 :is="button.icon"

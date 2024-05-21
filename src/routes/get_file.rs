@@ -11,82 +11,74 @@ use tokio_util::io::ReaderStream;
 use super::AppState;
 use crate::{
     models::APIError,
-    utils::{internal_error, parse_filename},
+    utils::{internal_error, FileInfo},
 };
 
 pub async fn route(
-    Path(raw_file_name): Path<String>,
+    Path(abs_file_path): Path<String>,
     State(state): State<AppState>,
 ) -> Result<
-    (
-        AppendHeaders<[(header::HeaderName, String); 1]>,
-        StreamBody<ReaderStream<File>>,
-    ),
+    (AppendHeaders<[(header::HeaderName, String); 1]>,
+     StreamBody<ReaderStream<File>>),
     (StatusCode, Json<APIError>),
 > {
-    let mut ext: Option<&str> = None;
-    let mut file_name = raw_file_name.clone();
+    let file = FileInfo::from_str(&abs_file_path);
 
-    if state.config.enforce_file_extensions {
-        if let (Some(parsed_file_name), Some(parsed_ext)) = parse_filename(&raw_file_name) {
-            file_name = parsed_file_name.to_string(); // strips off the filename.
-            ext = Some(parsed_ext);
-        }
-    }
-
-    let res = sqlx::query!(
-        "
+    let res = sqlx::query!("
         SELECT file_path, content_type FROM media
-            WHERE file_name = $1 AND (
-                    CASE WHEN $2 IS NULL THEN 1 ELSE file_ext = $2 END
-                )
+            WHERE file_name = $2 AND (
+                CASE WHEN $1 = false THEN 1 ELSE file_ext = $3 END
+            ) AND folder_id IS (
+                SELECT id FROM folder_paths WHERE path = '/' || $4
+            )
     ",
-        file_name,
-        ext
+        state.config.enforce_file_extensions,
+        file.file_name,
+        file.ext,
+        file.parent
     )
-    .fetch_optional(&*state.pool)
-    .await
-    .map_err(internal_error)?;
+        .fetch_optional(&*state.pool)
+        .await
+        .map_err(internal_error)?;
 
-    if let Some(query) = res {
-        let file = match File::open(query.file_path).await {
-            Ok(file) => file,
-            Err(_) => {
-                sqlx::query!(
-                    r#"
-                    DELETE FROM media
-                        WHERE file_hash IN (
-                            SELECT file_hash FROM media
-                                WHERE file_name = ?
-                        );
+    if let Some(record) = res {
+        let Ok(file) = File::open(record.file_path).await else {
+            sqlx::query!(r#"
+                DELETE FROM media
+                    WHERE file_hash IN (
+                        SELECT file_hash FROM media
+                            WHERE file_name = ?
+                    );
                 "#,
-                    file_name
-                ) // if the file has been tampered with.
+                file.file_name
+            )
                 .execute(&*state.pool)
                 .await
                 .map_err(internal_error)?;
 
-                return Err((
-                    StatusCode::NOT_FOUND,
-                    Json(APIError {
-                        message: "file not found".to_owned(),
-                    }),
-                ));
-            }
+            return Err((
+                StatusCode::NOT_FOUND,
+                Json(APIError {
+                    message: "file not found".to_owned(),
+                }),
+            ));
         };
 
-        let headers = AppendHeaders([(header::CONTENT_TYPE, query.content_type)]);
-
+        let headers = AppendHeaders([
+            (header::CONTENT_TYPE, record.content_type)
+        ]);
         let stream = ReaderStream::new(file);
-        let body = StreamBody::new(stream);
 
-        return Ok((headers, body));
-    };
+        return Ok((
+            headers,
+            StreamBody::new(stream)
+        ));
+    }
 
     Err((
         StatusCode::NOT_FOUND,
         Json(APIError {
-            message: "file not found".to_owned(),
+            message: format!("file `/{}` not found", abs_file_path),
         }),
     ))
 }

@@ -1,4 +1,4 @@
-import type { FileT } from '@/lib/comet/types'
+import { FileType, type FileT } from '@/lib/comet/types'
 
 enum SortBy {
   NameAsc = 1,
@@ -13,8 +13,8 @@ const sortFiles = (items: FileT[], by: SortBy | string = SortBy.NameAsc): FileT[
   }
 
   return items.sort((a, b) => {
-    if (a.file_type === 'FOLDER') return -1
-    if (b.file_type === 'FOLDER') return 1
+    if (a.file_type === FileType.FOLDER) return -1
+    if (b.file_type === FileType.FOLDER) return 1
 
     switch (by) {
       case SortBy.NameAsc:

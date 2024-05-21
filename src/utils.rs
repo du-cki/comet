@@ -1,9 +1,5 @@
-use nanoid::nanoid;
 use axum::{http::StatusCode, Json};
-
 use std::{ffi::OsStr, path::Path};
-
-use tracing::*;
 
 use crate::models::APIError;
 
@@ -11,7 +7,8 @@ pub fn internal_error<E>(err: E) -> (StatusCode, Json<APIError>)
 where
     E: std::error::Error,
 {
-    error!("Something went wrong: {:#?}", err);
+    tracing::error!("Something went wrong: {:#?}", err);
+
     (
         StatusCode::INTERNAL_SERVER_ERROR,
         Json(APIError {
@@ -28,34 +25,28 @@ pub fn strip_first_and_last(target: String) -> String {
     chars.collect()
 }
 
-pub fn generate_file_path(
-    length: usize,
-    base_path: String,
-    file_hash: &String,
-    raw_file_ext: &Option<&str>,
-) -> (String, String) {
-    let file_name = nanoid!(length);
-    let mut fp = format!("{}{}", base_path, file_hash);
-
-    if let Some(file_ext) = raw_file_ext {
-        fp = fp + "." + file_ext; // in cases of file not having a file extension, we can safely handle it like this.
-    }
-
-    (file_name, fp)
+#[derive(Debug)]
+pub struct FileInfo<'a> {
+    pub parent: Option<&'a str>,
+    pub file_name: Option<&'a str>,
+    pub ext: Option<&'a str>,
 }
 
-pub fn parse_filename(filename: &String) -> (Option<&str>, Option<&str>) {
-    let path = Path::new(filename);
+impl<'a> FileInfo<'a> {
+    pub fn from_str(data: &'a str) -> Self {
+        let path = Path::new(data);
 
-    (
-        path.file_stem().and_then(OsStr::to_str),
-        path.extension().and_then(OsStr::to_str),
-    )
+        Self {
+            parent: path.parent().and_then(|path| path.as_os_str().to_str()),
+            file_name: path.file_stem().and_then(OsStr::to_str),
+            ext: path.extension().and_then(OsStr::to_str)
+        }
+    }
 }
 
 #[macro_export]
 macro_rules! json_message {
-    ($($key:expr => $value:expr),* $(,)?) => {
+    ($($key: expr => $value: expr),* $(,)?) => {
         axum::extract::ws::Message::Text(serde_json::json!({
             $($key: $value,)*
         }).to_string())

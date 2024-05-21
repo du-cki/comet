@@ -4,6 +4,11 @@
 # @file
 # @version 0.1
 
+
+dev:
+	pnpm -C ui/ dev &
+	cargo build 
+
 build:
 	pnpm -C ui/ build
 	cargo build --release

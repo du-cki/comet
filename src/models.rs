@@ -44,20 +44,21 @@ pub struct Folder {
     pub path: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct File {
-    pub id: Option<i64>,
-    pub name: Option<String>,
-    pub file_type: Option<String>,
-    pub last_updated: Option<i32>,
+    pub id: i64,
+    pub name: String,
+    pub file_type: i32,
+    pub last_updated: i32,
 }
 
 #[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct FileRecord {
     pub original_file_name: Option<String>,
-    pub file_name: Option<String>,
     pub file_ext: Option<String>,
     pub folder_id: Option<i64>,
+    pub file_name: Option<String>,
+    pub file_url: String,
     pub file_id: i64,
     pub last_updated: i64,
 }
@@ -65,6 +66,7 @@ pub struct FileRecord {
 #[derive(Deserialize)]
 pub struct UploadQuery {
     pub public: Option<bool>,
+    pub folder: Option<String>,
 }
 
 #[derive(Serialize, Debug)]
@@ -77,6 +79,7 @@ pub struct UploadResponse {
     pub file: String,
     pub file_url: String,
     pub file_size: usize,
+    pub is_public: u16,
 }
 
 #[derive(Serialize, Debug)]

@@ -59,42 +59,40 @@ pub fn create(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
         }
     };
 
-    let inner = Router::new() // these will be authenticated routes.
+    let inner = Router::new() // authenticated routes.
         .route(
-            &format!("{}:file_name", state.config.endpoints.delete_file),
+            &format!("{}:file_name", state.config.api_endpoints.delete),
             delete(delete_file::route),
         )
-        .route(
-            &state.config.endpoints.upload_file,
-            post(upload_file::route),
-        )
+        .route(&state.config.api_endpoints.upload, post(upload_file::route))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             authenticated_routes,
         ))
         .with_state(state.clone());
 
-    Router::new()
+    let base = Router::new()
         .merge(inner)
         .layer(file_size_limit)
         .route(
-            &format!("{}:file_name", state.config.endpoints.get_file),
+            &format!("{}*file", state.config.api_endpoints.get),
             get(get_file::route),
         )
-        .route(
-            &state.config.endpoints.ping,
-            get(ping::route)
-        )
-        .route(
-            "/api/ws/pineapple",
-            get(pineapple::route)
-        )
-        .nest_service(
-            "/assets/",
-            ServeDir::new("ui/dist/assets")
-        )
-        .fallback_service(
-            ServeFile::new("ui/dist/index.html")
-        )
-        .with_state(state)
+        .route(&state.config.api_endpoints.ping, get(ping::route))
+        .with_state(state.clone());
+
+    if state.config.dashboard.enabled {
+        let dashboard = base.merge(
+            Router::new()
+                .route("/api/ws/pineapple", get(pineapple::route))
+                .nest_service("/", ServeFile::new("ui/dist/index.html"))
+                .nest_service("/assets/", ServeDir::new("ui/dist/assets"))
+                // .nest_service("/*", ServeDir::new("ui/dist/public"))
+                .with_state(state.clone()),
+        );
+
+        return dashboard;
+    }
+
+    base
 }

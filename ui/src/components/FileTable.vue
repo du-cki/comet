@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import FileItem from './FileItem.vue'
-import { ref, type Ref } from 'vue'
+import { ref } from 'vue'
 
 import { sortFiles, SortBy, setSortType } from '@/utils'
-import type { FileT } from '@/lib/comet/types'
+import { FileType, type FileT } from '@/lib/comet/types'
 
 defineProps<{
   files: FileT[]
   back: boolean
 }>()
 
-defineEmits(['openFile'])
+defineEmits<{
+  openFile: [value: FileT]
+}>()
 
 const storedSortType = localStorage.getItem('sortType')
-const sortType: Ref<SortBy | string> = ref(
+const sortType = ref<SortBy | string>(
   storedSortType ? (SortBy as any)[storedSortType].toString() : SortBy.UpdatedAsc.toString()
 )
 </script>
@@ -58,12 +60,12 @@ const sortType: Ref<SortBy | string> = ref(
           <th class="w-1 bg-gray-100 opacity-50" />
         </tr>
 
-        <tr v-if="back" class="hover:bg-gray-100">
+        <tr v-if="back" class="hover:bg-gray-100" o>
           <FileItem
             :file="{
               name: '...',
               id: 0,
-              file_type: 'FOLDER',
+              file_type: FileType.FOLDER,
               last_updated: 0
             }"
             :time="false"

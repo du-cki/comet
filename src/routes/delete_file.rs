@@ -3,7 +3,7 @@ use axum::{
     http::StatusCode,
     Json,
 };
-use tokio::fs::remove_file;
+use tokio::fs;
 
 use super::AppState;
 use crate::{
@@ -15,12 +15,11 @@ pub async fn route(
     Path(file_name): Path<String>,
     State(state): State<AppState>,
 ) -> Result<(StatusCode, Json<GenericResponse>), (StatusCode, Json<APIError>)> {
-    let query = sqlx::query!(
-        r#"
-            SELECT file_path, file_hash,
-                (SELECT COUNT(*) FROM media WHERE file_hash = media.file_hash) AS count
-            FROM media
-                WHERE file_name = ?;
+    let query = sqlx::query!(r#"
+        SELECT file_path, file_hash,
+            (SELECT COUNT(*) FROM media WHERE file_hash = media.file_hash) AS count
+        FROM media
+            WHERE file_name = $1;
     "#,
         file_name
     )
@@ -30,14 +29,13 @@ pub async fn route(
 
     if let Some(record) = query {
         if record.count == 1 {
-            remove_file(record.file_path).await.map_err(internal_error)?;
+            fs::remove_file(record.file_path).await.map_err(internal_error)?;
         }
 
-        sqlx::query!(
-                r#"
-                DELETE FROM media
-                    WHERE file_name = ?
-            "#,
+        sqlx::query!(r#"
+            DELETE FROM media
+                WHERE file_name = $1
+        "#,
             file_name
         )
         .execute(&*state.pool)
@@ -47,7 +45,7 @@ pub async fn route(
         return Ok((
             StatusCode::OK,
             Json(GenericResponse {
-                message: "Removed.".to_string(),
+                message: "removed".to_string(),
             }),
         ));
     }
@@ -55,7 +53,7 @@ pub async fn route(
     Err((
         StatusCode::NOT_FOUND,
         Json(APIError {
-            message: "File not found.".to_owned(),
+            message: "file not found".to_owned(),
         }),
     ))
 }

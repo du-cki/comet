@@ -6,9 +6,11 @@ import { Dropdown } from 'floating-vue'
 import { FileIcon, FolderIcon, ThreeDots } from '@/icons'
 import ContextMenu from '@/components/ContextMenu.vue'
 
-import type { FileT } from '@/lib/comet/types'
+import { FileType, type FileT } from '@/lib/comet/types'
 
-defineEmits(['openFile'])
+defineEmits<{
+  openFile: [value: FileT]
+}>()
 
 defineProps<{
   file: FileT
@@ -18,8 +20,8 @@ defineProps<{
 
 <template>
   <td class="flex items-center py-2 pl-3">
-    <FileIcon v-if="file.file_type === 'FILE'" class="fill-[#768390]" />
-    <FolderIcon v-else-if="file.file_type === 'FOLDER'" class="fill-[#768390]" />
+    <FileIcon v-if="file.file_type === FileType.FILE" class="fill-[#768390]" />
+    <FolderIcon v-else-if="file.file_type === FileType.FOLDER" class="fill-[#768390]" />
 
     <p
       class="pl-2 text-gray-700 truncate text-ellipsis hover:cursor-pointer hover:underline"
@@ -36,7 +38,7 @@ defineProps<{
   </td>
 
   <td class="pr-2 pl-2 flex justify-center">
-    <Dropdown v-if="file.file_type != 'FOLDER'" placement="left-start">
+    <Dropdown v-if="file.file_type === FileType.FILE" placement="left-start">
       <button>
         <ThreeDots
           class="h-4 fill-gray-500 hover:fill-gray-900 active:fill-gray-900 transition-all hover:cursor-pointer"
@@ -44,7 +46,7 @@ defineProps<{
       </button>
 
       <template #popper>
-        <ContextMenu :is_logged_in="false" :file_id="file.id" />
+        <ContextMenu :is_logged_in="true" :file_id="file.id" />
       </template>
     </Dropdown>
   </td>

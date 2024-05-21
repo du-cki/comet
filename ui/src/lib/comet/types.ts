@@ -22,8 +22,14 @@ interface RequestFileResponse extends BaseRequestResponse {
 interface FileT {
   id: number
   name: string
-  file_type: 'FILE' | 'FOLDER'
+  file_type: FileType
   last_updated: number
 }
 
+enum FileType {
+  FILE = 1,
+  FOLDER = 2
+}
+
 export type { FileT, RequestFileResponse }
+export { FileType }

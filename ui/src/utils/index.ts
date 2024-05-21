@@ -10,10 +10,10 @@ const url = (relativePath: string): string => {
 
 const sleep = (seconds: number) => new Promise((resolve) => setTimeout(resolve, seconds * 1000))
 
-const updateState = ({ hash, title }: { hash?: string; title?: string }) => {
-  // the typeof is required, but '' == false which would prevent me from resetting the hash
-  if (typeof hash === 'string') window.location.hash = hash
-  if (title) document.title = ''
+const updateState = (options: { hash?: string; title?: string }) => {
+  // the typeof is required, because ('' == false), which would prevent me from resetting the hash.
+  if (typeof options.hash === 'string') window.location.hash = options.hash
+  if (typeof options.title === 'string') document.title = options.title
 }
 
 export { sortFiles, SortBy, setSortType, url, sleep, updateState }
