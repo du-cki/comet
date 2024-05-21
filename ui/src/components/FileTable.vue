@@ -11,7 +11,7 @@ defineProps<{
 }>()
 
 defineEmits<{
-  openFile: [value: FileT]
+  folderOpened: [value: FileT]
 }>()
 
 const storedSortType = localStorage.getItem('sortType')
@@ -69,12 +69,12 @@ const sortType = ref<SortBy | string>(
               last_updated: 0
             }"
             :time="false"
-            @open-file="$emit('openFile', $event)"
+            @open-file="$emit('folderOpened', $event)"
           />
         </tr>
 
         <tr v-for="file in sortFiles(files, sortType)" class="hover:bg-gray-100" :key="file.id">
-          <FileItem :file="file" :time="true" @open-file="$emit('openFile', $event)" />
+          <FileItem :file="file" :time="true" @open-file="$emit('folderOpened', $event)" />
         </tr>
       </table>
     </div>
