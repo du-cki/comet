@@ -79,6 +79,8 @@ pub async fn route(
             }
         };
 
+        let folder = query_param.folder.clone().unwrap_or("/".to_string());
+
         let file = sqlx::query_as!(
             FileRecord,
             r#"
@@ -108,7 +110,7 @@ pub async fn route(
             file_hash,
             file_ext,
             original_file_name,
-            query_param.folder
+            folder
         )
         .fetch_one(&*state.pool)
         .await
@@ -125,16 +127,23 @@ pub async fn route(
             )
         })?;
 
-        if state.sx.receiver_count() > 0 {
+        if is_public == 1 {
             if let Err(err) = state.sx.send(file.clone()) {
                 tracing::error!("could not broadcast file upload, due to: {:#?}", err);
             };
         }
 
+        tracing::info!(
+            "Uploaded file `{:?}` with size {} and URL `{}`",
+            file.file_name,
+            data.len(),
+            file.file_url
+        );
+
         return Ok((
             StatusCode::OK,
             Json(UploadResponse {
-                file: file.file_name.unwrap(),
+                file: file.file_name.unwrap_or("unknown".to_owned()),
                 file_size: data.len(),
                 file_url: file.file_url,
                 is_public,

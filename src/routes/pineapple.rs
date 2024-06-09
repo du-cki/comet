@@ -5,13 +5,9 @@ use axum::{
     },
     response::IntoResponse,
 };
-use futures::StreamExt;
-use tokio::{
-    sync::{broadcast::Receiver, Mutex},
-    time::{self, Duration},
-};
 
-use std::{net::SocketAddr, sync::Arc};
+use std::net::SocketAddr;
+use tokio::sync::broadcast::Receiver;
 
 use crate::{
     json_message,
@@ -24,73 +20,67 @@ struct WSHandler {
     state: AppState,
 }
 
+unsafe impl std::marker::Send for WSHandler {}
+unsafe impl std::marker::Sync for WSHandler {}
+
 impl WSHandler {
     async fn from(socket: WebSocket, rx: Receiver<FileRecord>, state: AppState) {
         Self { socket, rx, state }.handle().await;
     }
 
     async fn handle(&mut self) {
+        tracing::info!("Received a new connection, starting loop...");
+
         loop {
-            if let Ok(file) = self.rx.recv().await {
-                let _ = self
-                    .socket
-                    .send(json_message!(
-                        "event" => Events::FileUpload.to_string(),
-                        "file" => file
-                    ))
-                    .await;
-            }
+            tokio::select! {
+                Some(Ok(message)) = self.socket.recv() => {
+                    tracing::info!("received message: {:?}", message);
 
-            let message = self.socket.next().await;
-
-            if let Some(Ok(message)) = message {
-                if let Ok(msg) = message.to_text() {
-                    if let Ok(data) = serde_json::from_str::<GenericRequest>(msg) {
-                        let msg: Message = match data.event {
-                            Events::QueryFolder => self.query_folder(data).await,
-                            other => {
-                                tracing::error!(
-                                    "unimplemented event `{:?}` received, ignoring...",
-                                    other
-                                );
-                                continue;
+                    match message {
+                        Message::Text(msg) => {
+                            if let Some(response) = self.poll_response(msg).await {
+                                let _ = self.socket
+                                    .send(response)
+                                    .await;
                             }
-                        };
-
-                        let _ = self.socket.send(msg).await;
+                        }
+                        Message::Close(_) => {
+                            tracing::info!("client disconnected");
+                            return;
+                        }
+                        _ => {}
                     }
                 }
-            } else if let None = message {
-                tracing::info!("client disconnected, exiting loop...");
-                break;
-            }
+                Ok(file) = self.rx.recv() => {
+                    tracing::info!("received file: {:?}", file);
 
-            time::sleep(Duration::from_secs(1)).await;
-            tracing::info!("Done iteration, sleeping...")
+                    let _ = self.socket
+                        .send(json_message!(
+                            "event" => Events::FileUpload.to_string(),
+                            "file" => file
+                        ))
+                        .await;
+                }
+            }
         }
     }
 
-    // async fn respond_to_messages(&self) {
-    //     while let Some(Ok(message)) = self.receiver.lock().await.next().await {
-    //         if let Ok(msg) = message.to_text() {
-    //             if let Ok(data) = serde_json::from_str::<GenericRequest>(msg) {
-    //                 let msg: Message = match data.event {
-    //                     Events::QueryFolder => self.query_folder(data).await,
-    //                     other => {
-    //                         tracing::error!(
-    //                             "unimplemented event `{:?}` received, ignoring...",
-    //                             other
-    //                         );
-    //                         continue;
-    //                     }
-    //                 };
+    async fn poll_response(&self, msg: String) -> Option<Message> {
+        if let Ok(data) = serde_json::from_str::<GenericRequest>(&msg) {
+            let message: Message = match data.event {
+                Events::QueryFolder => self.query_folder(data).await,
+                other => {
+                    tracing::error!("unimplemented event `{:?}` received, ignoring...", other);
 
-    //                 let mut sender = self.sender.lock().await;
-    //                 let _ = sender.send(msg).await;
-    //             }
-    //         }
-    //     }
-    // }
+                    return None;
+                }
+            };
+
+            return Some(message);
+        }
+
+        None
+    }
 
     async fn query_folder(&self, request: GenericRequest) -> Message {
         let folder_query = sqlx::query_as!(

@@ -25,7 +25,7 @@ const client = new Client(
   import.meta.env.PROD
     ? url('/api/ws/pineapple')
     : // i run the backend as a standalone server while in dev mode
-      'ws://100.127.105.135:3000/api/ws/pineapple'
+      'ws://uwuntu:3000/api/ws/pineapple'
 )
 
 client.onopen = () => {

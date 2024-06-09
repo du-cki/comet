@@ -15,7 +15,8 @@
   "dependencies": {
     "floating-vue": "2.0.0-beta.24",
     "moment": "^2.30.1",
-    "vue": "^3.3.13"
+    "vue": "^3.3.13",
+    "vue3-toastify": "^0.2.1"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.6.1",
