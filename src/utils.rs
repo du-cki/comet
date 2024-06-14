@@ -39,9 +39,20 @@ impl<'a> FileInfo<'a> {
         Self {
             parent: path.parent().and_then(|path| path.as_os_str().to_str()),
             file_name: path.file_stem().and_then(OsStr::to_str),
-            ext: path.extension().and_then(OsStr::to_str)
+            ext: path.extension().and_then(OsStr::to_str),
         }
     }
+}
+
+#[macro_export]
+macro_rules! route {
+    ($base:expr $(, $segment:expr)*) => {{
+        #[allow(unused_mut)]
+        let mut base = $base.trim_end_matches('/').to_string();
+        $(base.push_str($segment);)*
+
+        if base.is_empty() { "/".to_string() } else { base.to_string() }
+    }};
 }
 
 #[macro_export]

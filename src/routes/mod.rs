@@ -12,14 +12,15 @@ use axum::{
 use sqlx::{Pool, Sqlite};
 
 use tokio::sync::broadcast;
-use tower_http::services::{ServeDir, ServeFile};
 
 use crate::models::{AppState, FileRecord};
 use crate::settings::Settings;
 
+use crate::route;
+
+mod dash;
 mod delete_file;
 mod get_file;
-mod pineapple;
 mod ping;
 mod upload_file;
 
@@ -42,7 +43,7 @@ async fn authenticated_routes<B>(
         .unwrap()
 }
 
-pub fn create(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
+pub fn new(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
     let (sx, _) = broadcast::channel::<FileRecord>(1);
 
     let state = AppState {
@@ -61,10 +62,13 @@ pub fn create(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
 
     let inner = Router::new() // authenticated routes.
         .route(
-            &format!("{}:file_name", state.config.api_endpoints.delete),
+            &route!(&state.config.api_endpoints.delete, "/:file_name"),
             delete(delete_file::route),
         )
-        .route(&state.config.api_endpoints.upload, post(upload_file::route))
+        .route(
+            &route!(&state.config.api_endpoints.upload),
+            post(upload_file::route),
+        )
         .layer(middleware::from_fn_with_state(
             state.clone(),
             authenticated_routes,
@@ -75,23 +79,14 @@ pub fn create(pool: Arc<Pool<Sqlite>>, config: &Settings) -> Router {
         .merge(inner)
         .layer(file_size_limit)
         .route(
-            &format!("{}*file", state.config.api_endpoints.get),
+            &route!(&state.config.api_endpoints.get, "/*file"),
             get(get_file::route),
         )
-        .route(&state.config.api_endpoints.ping, get(ping::route))
+        .route(&route!(&state.config.api_endpoints.ping), get(ping::route))
         .with_state(state.clone());
 
     if state.config.dashboard.enabled {
-        let dashboard = base.merge(
-            Router::new()
-                .route("/api/ws/pineapple", get(pineapple::route))
-                .nest_service("/", ServeFile::new("ui/dist/index.html"))
-                .nest_service("/assets/", ServeDir::new("ui/dist/assets"))
-                // .nest_service("/*", ServeDir::new("ui/dist/public"))
-                .with_state(state.clone()),
-        );
-
-        return dashboard;
+        return base.merge(dash::new(state.clone()));
     }
 
     base

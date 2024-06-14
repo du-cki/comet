@@ -33,18 +33,18 @@ impl WSHandler {
 
         loop {
             tokio::select! {
-                Some(Ok(message)) = self.socket.recv() => {
-                    tracing::info!("received message: {:?}", message);
-
+                message = self.socket.recv() => {
                     match message {
-                        Message::Text(msg) => {
+                        Some(Ok(Message::Text(msg))) => {
+                            tracing::info!("received message: {:?}", msg);
+
                             if let Some(response) = self.poll_response(msg).await {
                                 let _ = self.socket
                                     .send(response)
                                     .await;
                             }
                         }
-                        Message::Close(_) => {
+                        Some(Ok(Message::Close(_))) | None => {
                             tracing::info!("client disconnected");
                             return;
                         }
@@ -145,15 +145,7 @@ impl WSHandler {
 pub async fn route(
     ws: WebSocketUpgrade,
     State(state): State<AppState>,
-    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    ConnectInfo(_addr): ConnectInfo<SocketAddr>,
 ) -> impl IntoResponse {
-    ws.on_upgrade(move |socket| pineapple(socket, state, addr))
-}
-
-async fn pineapple(
-    socket: WebSocket,
-    state: AppState,
-    _: SocketAddr, // TODO
-) {
-    WSHandler::from(socket, state.sx.subscribe(), state).await
+    ws.on_upgrade(move |socket| WSHandler::from(socket, state.sx.subscribe(), state))
 }

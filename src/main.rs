@@ -24,7 +24,7 @@ async fn main() {
 
     fs::create_dir_all(&config.file_save_path).unwrap();
 
-    let app = routes::create(Arc::new(pool), &config);
+    let app = routes::new(Arc::new(pool), &config);
 
     let addr = SocketAddr::from((config.bind_addr, config.bind_port));
     info!("listening on http://{}/", addr);
