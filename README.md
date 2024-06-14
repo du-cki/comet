@@ -4,9 +4,12 @@ Comet is a 🚀 **blazingly fast** 🚀 **C**ontent **D**elivery **N**etwork nod
 
 ## Features
 
-TODO
+<!-- TODO: Add Features + Screenshots -->
 
 ## Installation
+
+<!-- TODO: move installation from source to wiki, promote docker image -->
+<!-- TODO: make a simple github.io page that generates a docker run command with the features -->
 
 Before you start, make sure you have Rust installed on your system. If you don't have it installed, you can download it from the official website: <https://www.rust-lang.org/tools/install>
 
@@ -33,39 +36,6 @@ Before you start, make sure you have Rust installed on your system. If you don't
 
    <sup>Refer to the [wiki](/wiki) for ways to run the app indefinitely and pointers on exposing the app to the internet.</sup>
 
-## Usage
-
-<details>
-<summary>Uploading a File</summary>
-
-```bash
-$ curl -X POST http://localhost:3000/upload \
-     -H "Authorization: $AUTH_TOKEN" \
-     -F file=@image.jpg
-
-{
-    "file": "DLRWjS_p",
-    "file_url": "/media/DLRWjS_p.jpg",
-    "file_size": 194668
-}
-```
-
-</details>
-
-<details>
-<summary>Deleting a File</summary>
-
-```bash
-curl -X DELETE http://localhost:3000/delete/DLRWjS_p \
-     -H "Authorization: $AUTH_TOKEN"
-
-{
-    "message": "Removed."
-}
-```
-
-</details>
-
 ## Contributing
 
 If you are interested in contributing to the development of Comet, here's how to setup an development enviroment:
@@ -86,6 +56,6 @@ If you are interested in contributing to the development of Comet, here's how to
 
 If you make changes to any SQL queries, you'll need to regenerate the `/sqlx-data.json` file for any further offline compilation. You can regenerate it with the [SQLx CLI](https://github.com/launchbadge/sqlx/tree/main/sqlx-cli) through `cargo sqlx prepare`.
 
-### License
+## License
 
 This project is licensed under the MIT license.

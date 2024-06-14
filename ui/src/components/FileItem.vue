@@ -3,10 +3,10 @@ import moment from 'moment'
 
 import { Dropdown } from 'floating-vue'
 
-import { FileIcon, FolderIcon, ThreeDots } from '@/icons'
-import ContextMenu from '@/components/ContextMenu.vue'
+import { FileIcon, FolderIcon, ThreeDots } from '../icons'
+import ContextMenu from '../components/ContextMenu.vue'
 
-import { FileType, type FileT } from '@/lib/comet/types'
+import { FileType, type FileT } from '../lib/comet/types'
 
 defineEmits<{
   openFile: [value: FileT]
@@ -23,10 +23,8 @@ defineProps<{
     <FileIcon v-if="file.file_type === FileType.FILE" class="fill-[#768390]" />
     <FolderIcon v-else-if="file.file_type === FileType.FOLDER" class="fill-[#768390]" />
 
-    <p
-      class="pl-2 text-gray-700 truncate text-ellipsis hover:cursor-pointer hover:underline"
-      v-on:click="$emit('openFile', file)"
-    >
+    <p class="pl-2 text-gray-700 truncate text-ellipsis hover:cursor-pointer hover:underline"
+      v-on:click="$emit('openFile', file)">
       {{ `${file.name}` }}
     </p>
   </td>
@@ -41,8 +39,7 @@ defineProps<{
     <Dropdown v-if="file.file_type === FileType.FILE" placement="left-start">
       <button>
         <ThreeDots
-          class="h-4 fill-gray-500 hover:fill-gray-900 active:fill-gray-900 transition-all hover:cursor-pointer"
-        />
+          class="h-4 fill-gray-500 hover:fill-gray-900 active:fill-gray-900 transition-all hover:cursor-pointer" />
       </button>
 
       <template #popper>

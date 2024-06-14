@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { toast } from 'vue3-toastify'
-import { ShareIcon, DownloadIcon, RenameIcon, FolderOpenIcon, DeleteIcon, InfoIcon } from '@/icons'
+import { ShareIcon, DownloadIcon, RenameIcon, FolderOpenIcon, DeleteIcon, InfoIcon } from '../icons'
 
 import 'vue3-toastify/dist/index.css'
 
@@ -85,21 +85,13 @@ const buttons = [
 </script>
 
 <template>
-  <div
-    class="w-fit border-1 select-none rounded-md bg-white border-neutral-100 px-1 py-1 shadow text-sm"
-  >
+  <div class="w-fit border-1 select-none rounded-md bg-white border-neutral-100 px-1 py-1 shadow text-sm">
     <ul>
       <li v-for="button in buttons" :key="button.name">
         <div v-if="(button.isAuth && is_logged_in) || !button.isAuth">
           <div v-if="button.type === ButtonType.Button">
-            <button
-              :class="`item ${button.customColour || 'text-gray-700'}`"
-              v-on:click="button.callback"
-            >
-              <component
-                :is="button.icon"
-                :class="`icon ${button.customColour || 'fill-gray-700'}`"
-              />
+            <button :class="`item ${button.customColour || 'text-gray-700'}`" v-on:click="button.callback">
+              <component :is="button.icon" :class="`icon ${button.customColour || 'fill-gray-700'}`" />
 
               <p>{{ button.name }}</p>
             </button>

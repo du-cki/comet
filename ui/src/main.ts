@@ -1,4 +1,4 @@
-import '@/global.css'
+import './style.css'
 import 'floating-vue/dist/style.css'
 
 import { createApp } from 'vue'
@@ -6,7 +6,7 @@ import FloatingVue from 'floating-vue'
 
 import App from './App.vue'
 
-import Client from '@/lib/comet'
+import Client from './lib/comet'
 import { url } from './utils'
 
 import { toast, type Id } from 'vue3-toastify'

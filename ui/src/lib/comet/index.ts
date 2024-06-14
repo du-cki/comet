@@ -1,6 +1,6 @@
-import { sleep } from '@/utils'
+import { sleep } from '../../utils'
 
-import type { RequestFileResponse } from '@/lib/comet/types'
+import type { RequestFileResponse } from './types'
 
 class Client {
   conn?: WebSocket
@@ -46,7 +46,7 @@ class Client {
 
         // we only need an `onclose` only if the socket actually closes
         // after connecting.
-        socket.onclose = () => this.onclose()
+        socket.onclose = this.onclose
 
         socket.onmessage = (ev) => {
           const data = JSON.parse(ev.data)
@@ -64,7 +64,9 @@ class Client {
       })
 
       socket.addEventListener('close', () => {
+        socket.onclose = () => {}
         socket.close()
+        
         reject(socket)
       })
     })

@@ -13,3 +13,8 @@ Cargo.lock
 
 # SQLite files.
 *.db
+
+.env
+
+# Don't want the media folder to be included with the dist.
+media/

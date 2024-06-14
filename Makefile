@@ -4,26 +4,29 @@
 # @file
 # @version 0.1
 
+.PHONY: help
+help:
+	@echo "Available targets:"
+	@echo "  build    - build the project via docker buildx"
+	@echo "  run      - run the project"
+	@echo "  clean    - remove all the project dependency files"
+	@echo "  prepare  - prepares the SQL queries for offline compilation"
+	@echo "  help     - show this help"
 
-dev:
-	pnpm -C ui/ dev &
-	cargo build 
-
+.PHONY: build
 build:
-	pnpm -C ui/ build
-	cargo build --release
+	docker buildx build -t comet .
 
+.PHONY: run
 run:
 	$(MAKE) build
-	RUST_LOG=none,comet=debug cargo run --release
+	docker run comet
 
-install:
-	SQLX_OFFLINE=true cargo build
-	pnpm -C ui/ install
-
+.PHONY: prepare
 prepare:
 	cargo sqlx prepare --database-url='sqlite://data.db'
 
+.PHONY: clean
 clean:
 	cargo clean
 	rm -rf ui/node_modules

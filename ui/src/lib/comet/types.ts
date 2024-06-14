@@ -1,5 +1,3 @@
-type Option<T> = T | null
-
 enum RequestType {
   QueryFolder = 'query_folder',
 

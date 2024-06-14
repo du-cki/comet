@@ -26,7 +26,7 @@ async fn main() {
 
     let app = routes::new(Arc::new(pool), &config);
 
-    let addr = SocketAddr::from((config.bind_addr, config.bind_port));
+    let addr = SocketAddr::from((config.addr, config.port));
     info!("listening on http://{}/", addr);
 
     axum::Server::bind(&addr)

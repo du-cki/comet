@@ -1,40 +1,27 @@
 {
-  "name": "ui",
-  "version": "0.0.0",
+  "name": "ui2",
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
-    "preview": "vite preview",
-    "build-only": "vite build",
-    "move-files": "mkdir -p dist/public && find dist -type f | grep -vE 'dist/(index.html|assets|public)' | xargs mv -t dist/public",
-    "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "format": "prettier --write src/"
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "floating-vue": "2.0.0-beta.24",
+    "floating-vue": "^5.2.2",
     "moment": "^2.30.1",
-    "vue": "^3.3.13",
+    "path": "^0.12.7",
+    "vue": "^3.4.21",
     "vue3-toastify": "^0.2.1"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.6.1",
-    "@tsconfig/node18": "^18.2.2",
-    "@types/node": "^18.19.3",
-    "@vitejs/plugin-vue": "^4.6.0",
-    "@vue/eslint-config-prettier": "^8.0.0",
-    "@vue/eslint-config-typescript": "^12.0.0",
-    "@vue/tsconfig": "^0.4.0",
-    "autoprefixer": "^10.4.16",
-    "eslint": "^8.56.0",
-    "eslint-plugin-vue": "^9.19.2",
-    "npm-run-all2": "^6.1.1",
-    "postcss": "^8.4.32",
-    "prettier": "^3.1.1",
-    "tailwindcss": "^3.4.0",
-    "typescript": "~5.2.2",
-    "vite": "^4.5.1",
-    "vue-tsc": "^1.8.27"
+    "@vitejs/plugin-vue": "^5.0.4",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vue-tsc": "^2.0.6"
   }
 }

@@ -2,8 +2,8 @@
 import FileItem from './FileItem.vue'
 import { ref } from 'vue'
 
-import { sortFiles, SortBy, setSortType } from '@/utils'
-import { FileType, type FileT } from '@/lib/comet/types'
+import { sortFiles, SortBy, setSortType } from '../utils'
+import { FileType, type FileT } from '../lib/comet/types'
 
 defineProps<{
   files: FileT[]
@@ -23,36 +23,26 @@ const sortType = ref<SortBy | string>(
 <template>
   <div class="flex w-full justify-center py-1">
     <div class="w-full mx-3 md:w-3/4 md:mx-0 border rounded-lg overflow-hidden">
-      <table
-        class="divider w-full rounded-lg overflow-hidden text-sm lg:text-lg select-none cursor-default"
-      >
+      <table class="divider w-full rounded-lg overflow-hidden text-sm lg:text-lg select-none cursor-default">
         <tr class="text-gray-500 text-sm font-semibold bg-gray-50">
           <th class="pl-3 py-1 text-left select-none">
-            <span
-              class="hover:cursor-pointer"
-              @click="
-                () => {
-                  sortType = setSortType(
-                    sortType === SortBy.NameAsc ? SortBy.NameDesc : SortBy.NameAsc
-                  )
-                }
-              "
-            >
+            <span class="hover:cursor-pointer" @click="() => {
+              sortType = setSortType(
+                sortType === SortBy.NameAsc ? SortBy.NameDesc : SortBy.NameAsc
+              )
+            }
+              ">
               Name
             </span>
           </th>
 
           <th class="pr-2 md:pr-3 text-right select-none">
-            <span
-              class="hover:cursor-pointer"
-              @click="
-                () => {
-                  sortType = setSortType(
-                    sortType === SortBy.UpdatedAsc ? SortBy.UpdatedDesc : SortBy.UpdatedAsc
-                  )
-                }
-              "
-            >
+            <span class="hover:cursor-pointer" @click="() => {
+              sortType = setSortType(
+                sortType === SortBy.UpdatedAsc ? SortBy.UpdatedDesc : SortBy.UpdatedAsc
+              )
+            }
+              ">
               Last Updated
             </span>
           </th>
@@ -61,16 +51,12 @@ const sortType = ref<SortBy | string>(
         </tr>
 
         <tr v-if="back" class="hover:bg-gray-100" o>
-          <FileItem
-            :file="{
-              name: '...',
-              id: 0,
-              file_type: FileType.FOLDER,
-              last_updated: 0
-            }"
-            :time="false"
-            @open-file="$emit('folderOpened', $event)"
-          />
+          <FileItem :file="{
+            name: '...',
+            id: 0,
+            file_type: FileType.FOLDER,
+            last_updated: 0
+          }" :time="false" @open-file="$emit('folderOpened', $event)" />
         </tr>
 
         <tr v-for="file in sortFiles(files, sortType)" class="hover:bg-gray-100" :key="file.id">

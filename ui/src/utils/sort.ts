@@ -1,4 +1,4 @@
-import { FileType, type FileT } from '@/lib/comet/types'
+import { FileType, type FileT } from '../lib/comet/types'
 
 enum SortBy {
   NameAsc = 1,
