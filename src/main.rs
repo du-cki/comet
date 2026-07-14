@@ -1,13 +1,7 @@
-use std::{net::SocketAddr, sync::Arc};
+use std::sync::Arc;
+use tokio::net::TcpListener;
 
-use tracing::info;
-
-mod models;
 mod routes;
-mod settings;
-mod utils;
-
-use crate::settings::Settings;
 
 #[tokio::main]
 async fn main() {
@@ -20,14 +14,15 @@ async fn main() {
     let schema = include_str!("../schema.sql");
     sqlx::query(schema).execute(&pool).await.unwrap();
 
-    let config = Settings::new().unwrap();
-    let app = routes::create(Arc::new(pool), &config);
+    let app = routes::new(Arc::new(pool));
 
-    let addr = SocketAddr::from((config.bind_addr, config.bind_port));
-    info!("listening on http://{}/", addr);
+    let listener = TcpListener::bind(format!(
+        "0.0.0.0:{}",
+        std::env::var("port").unwrap_or(String::from("3000"))
+    ))
+    .await
+    .unwrap();
 
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    tracing::info!("listening on http://{}", listener.local_addr().unwrap());
+    let _ = axum::serve(listener, app).await;
 }

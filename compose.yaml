@@ -1,0 +1,19 @@
+services:
+  backend:
+    build:
+      dockerfile: backend.Dockerfile
+    restart: unless-stopped
+    volumes:
+      - './uploads:/data/uploads'
+
+  app:
+    build:
+      dockerfile: frontend.Dockerfile
+      args:
+        - VITE_API_URL=/api
+        - VITE_WS_URL=/api
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
