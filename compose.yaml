@@ -10,8 +10,8 @@ services:
     build:
       dockerfile: frontend.Dockerfile
       args:
-        - VITE_API_URL=/api
-        - VITE_WS_URL=/api
+        - APP_API_URL=/api
+        - APP_WS_URL=/api
     restart: unless-stopped
     depends_on:
       - backend

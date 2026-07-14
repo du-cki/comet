@@ -4,16 +4,23 @@
   "version": "0.0.0",
   "source": "src/index.html",
   "scripts": {
-    "start": "parcel",
+    "dev": "parcel",
     "build": "parcel build"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.3.2",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-router": "^8.2.0",
+    "tailwindcss": "^4.3.2"
   },
   "devDependencies": {
+    "@types/node": "^26.1.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "parcel": "^2.14.0"
+  },
+  "@parcel/resolver-default": {
+    "packageExports": true
   }
 }

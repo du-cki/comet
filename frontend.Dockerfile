@@ -1,11 +1,11 @@
 FROM node:26-alpine AS app-builder
 WORKDIR /app
 
-ARG VITE_API_URL
-ARG VITE_WS_URL
+ARG APP_API_URL
+ARG APP_WS_URL
 
-ENV VITE_API_URL=$VITE_API_URL
-ENV VITE_WS_URL=$VITE_WS_URL
+ENV APP_API_URL=$APP_API_URL
+ENV APP_WS_URL=$APP_WS_URL
 
 COPY ./app/package.json ./app/package-lock.json* ./
 RUN npm install
