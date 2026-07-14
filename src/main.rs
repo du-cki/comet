@@ -1,6 +1,8 @@
-use std::sync::Arc;
+use std::{env, sync::Arc};
 use tokio::net::TcpListener;
 
+mod jwt;
+mod models;
 mod routes;
 
 #[tokio::main]
@@ -11,14 +13,19 @@ async fn main() {
         .await
         .unwrap();
 
-    let schema = include_str!("../schema.sql");
-    sqlx::query(schema).execute(&pool).await.unwrap();
+    sqlx::migrate!("./migrations").run(&pool).await.unwrap();
 
-    let app = routes::new(Arc::new(pool));
+    let state = Arc::new(models::AppState {
+        db: pool,
+        // TODO: panic when no jwt secret has passed
+        jwt_secret: env::var("JWT_SECRET").unwrap_or(String::from("burgers")),
+    });
+
+    let app = routes::with_state(state);
 
     let listener = TcpListener::bind(format!(
         "0.0.0.0:{}",
-        std::env::var("port").unwrap_or(String::from("3000"))
+        env::var("PORT").unwrap_or(String::from("3000"))
     ))
     .await
     .unwrap();
