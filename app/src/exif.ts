@@ -28,7 +28,7 @@ function parseDMS(dms?: string, ref?: string): number | undefined {
   return decimal;
 }
 
-export interface ParsedExif {
+export type ParsedExif = {
   camera?: string;
   dateTaken?: string;
   resolution?: string;
@@ -39,10 +39,15 @@ export interface ParsedExif {
   flash?: string;
   whiteBalance?: string;
   gps?: { lat: number; lng: number; mapUrl: string; embedUrl: string };
-}
+
+  title?: string;
+  artist?: string;
+  album?: string;
+};
 
 export function parseExif(raw: RawExif): ParsedExif {
-  const get = (key: string) => clean(raw[`x-exif-${key}`]);
+  const get = (key: string, prefix: string = "x-exif-") =>
+    clean(raw[`${prefix}${key}`]);
 
   const camera = [get("make"), get("model")].filter(Boolean).join(" ");
 
@@ -70,6 +75,10 @@ export function parseExif(raw: RawExif): ParsedExif {
         }
       : undefined;
 
+  const title = get("title", "x-audio-");
+  const artist = get("artist", "x-audio-");
+  const album = get("album", "x-audio-");
+
   return {
     camera: camera || undefined,
     dateTaken: get("datetimeoriginal"),
@@ -81,5 +90,9 @@ export function parseExif(raw: RawExif): ParsedExif {
     flash: get("flash"),
     whiteBalance: get("whitebalance"),
     gps,
+
+    title,
+    artist,
+    album,
   };
 }

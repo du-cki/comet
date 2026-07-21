@@ -118,6 +118,13 @@ export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
     exif.focalLength && { name: "Focal Length", value: exif.focalLength },
     exif.flash && { name: "Flash", value: exif.flash },
     exif.whiteBalance && { name: "White Balance", value: exif.whiteBalance },
+
+    exif.title && { name: "Title", value: exif.title },
+    exif.artist && {
+      name: "Artist",
+      value: exif.artist.split("; ").join(", "),
+    },
+    exif.album && { name: "Album", value: exif.album },
   ].filter(Boolean) as { name: string; value: string }[];
 
   const handleCopy = async () => {
