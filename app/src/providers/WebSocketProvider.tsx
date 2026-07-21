@@ -8,10 +8,12 @@ import React, {
 } from "react";
 
 import { WS_BASE_URL } from "../utils";
+import { Authenticated, User } from "../types";
 
 type ConnectionStatus = "idle" | "connecting" | "connected" | "disconnected";
 
 type WebSocketContextType = {
+  user: User | null;
   ws: WebSocket | null;
   status: ConnectionStatus;
   connect: (token: string) => void;
@@ -21,6 +23,7 @@ type WebSocketContextType = {
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 export function WebSocketProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
   const [wsInstance, setWsInstance] = useState<WebSocket | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>("idle");
 
@@ -33,18 +36,35 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     const ws = new WebSocket(`${WS_BASE_URL}/pineapple`);
     activeSocketRef.current = ws;
 
+    const handleAuth = (ev: MessageEvent) => {
+      const e = JSON.parse(ev.data);
+      if (e.type === "Authenticated") {
+        setUser((e as Authenticated).data);
+
+        ws?.removeEventListener("message", handleAuth);
+      }
+    };
+
+    ws.addEventListener("message", handleAuth);
+
     ws.onopen = () => {
       if (activeSocketRef.current !== ws) return;
-            ws.send(JSON.stringify({ token }));
+
+      ws.send(JSON.stringify({ token }));
+
       setStatus("connected");
       console.log("[websocket] connected");
     };
 
     ws.onclose = () => {
       if (activeSocketRef.current !== ws) return;
+
       activeSocketRef.current = null;
+
+      setUser(null);
       setWsInstance(null);
       setStatus("disconnected");
+
       console.log("[websocket] disconnected");
     };
 
@@ -60,6 +80,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       activeSocketRef.current = null;
     }
 
+    setUser(null);
     setWsInstance(null);
     setStatus("idle");
   };
@@ -70,7 +91,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
 
   return (
     <WebSocketContext.Provider
-      value={{ ws: wsInstance, status, connect, disconnect }}
+      value={{ user, ws: wsInstance, status, connect, disconnect }}
     >
       {children}
     </WebSocketContext.Provider>

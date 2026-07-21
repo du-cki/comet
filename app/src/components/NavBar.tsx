@@ -68,6 +68,7 @@ const bottomNavItems: NavItemT[] = [
   {
     label: "Admin Settings",
     route: "/admin",
+    minRole: Role.Admin,
     icon: <ShieldCogCorner />,
   },
   {
@@ -80,8 +81,11 @@ const bottomNavItems: NavItemT[] = [
 export function NavBar() {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const { disconnect } = useWebSocket();
+  const { user, disconnect } = useWebSocket();
   const navigate = useTransitionNavigate();
+
+  const navVisibility = (item: NavItemT) =>
+    item.minRole === undefined || (user?.role || Role.User) >= item.minRole;
 
   const logOut = () => {
     localStorage.removeItem("auth_token");
@@ -109,7 +113,7 @@ export function NavBar() {
         </button>
 
         <div className="mt-8 flex flex-col gap-2">
-          {topNavItems.map((item) => (
+          {topNavItems.filter(navVisibility).map((item) => (
             <NavItem
               key={item.label}
               item={item}
@@ -121,7 +125,7 @@ export function NavBar() {
       </div>
 
       <div className="flex flex-col gap-2 pb-6">
-        {bottomNavItems.map((item) => (
+        {bottomNavItems.filter(navVisibility).map((item) => (
           <NavItem key={item.label} item={item} isExpanded={isExpanded} />
         ))}
 

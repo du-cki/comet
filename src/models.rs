@@ -41,6 +41,7 @@ pub enum WsEvent {
     },
     FileUpload(MediaItem),
     FileDelete(String),
+    Authenticated(DbUser),
     Error(String),
 }
 
@@ -76,11 +77,12 @@ pub struct ErrorResponse {
     pub error: String,
 }
 
-#[derive(FromRow)]
+#[derive(Clone, FromRow, Debug, Serialize)]
 pub struct DbUser {
     pub id: i64,
-    pub password: String,
+    pub name: String,
     pub role: i64,
+    pub created_at: i64,
 }
 
 #[derive(Clone, Debug, Serialize)]

@@ -1,12 +1,21 @@
 export enum Role {
   Admin = 1,
-  User = 1,
+  User = 0,
 }
+
+export type User = {
+  id: number;
+  name: string;
+  role: number;
+  created_at: number;
+};
 
 type WebSocketMessage<T, D> = {
   type: T;
   data: D;
 };
+
+export type Authenticated = WebSocketMessage<"Authenticated", User>;
 
 export type DashboardStats = WebSocketMessage<
   "DashboardStats",

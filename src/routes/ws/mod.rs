@@ -14,7 +14,7 @@ use tokio::sync::broadcast;
 
 use crate::{
     jwt::validate_jwt,
-    models::{AppState, WSClientCommand, WsEvent},
+    models::{AppState, DbUser, WSClientCommand, WsEvent},
 };
 
 mod dispatch;
@@ -38,12 +38,19 @@ async fn send_ws_event(socket: &mut WebSocket, event: WsEvent) -> Result<(), ()>
 }
 
 async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
-    let user_id = match authenticate_socket(&mut socket, &state).await {
+    let user = match authenticate_socket(&mut socket, &state).await {
         Ok(id) => id,
         Err(_) => {
             let _ = socket.close().await;
             return;
         }
+    };
+
+    if send_ws_event(&mut socket, WsEvent::Authenticated(user.clone()))
+        .await
+        .is_err()
+    {
+        return;
     };
 
     let mut rx = state.tx.subscribe();
@@ -57,7 +64,7 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
                     Err(broadcast::error::RecvError::Closed) => break,
                 };
 
-                if broadcast_msg.user_id == user_id
+                if broadcast_msg.user_id == user.id
                     && send_ws_event(&mut socket, broadcast_msg.event).await.is_err()
                 {
                     break;
@@ -76,7 +83,7 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
                     continue;
                 };
 
-                let event = dispatch(cmd, user_id, &state).await;
+                let event = dispatch(cmd, user.id, &state).await;
                 if send_ws_event(&mut socket, event).await.is_err() {
                     break;
                 }
@@ -85,7 +92,7 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
     }
 }
 
-async fn authenticate_socket(socket: &mut WebSocket, state: &Arc<AppState>) -> Result<i64, ()> {
+async fn authenticate_socket(socket: &mut WebSocket, state: &Arc<AppState>) -> Result<DbUser, ()> {
     let msg = match socket.recv().await {
         Some(Ok(msg)) => msg,
         _ => return Err(()),
@@ -99,5 +106,14 @@ async fn authenticate_socket(socket: &mut WebSocket, state: &Arc<AppState>) -> R
     let payload: WsAuthPayload = serde_json::from_str(&text).map_err(|_| ())?;
     let token_data = validate_jwt(&payload.token, &state.jwt_secret).map_err(|_| ())?;
 
-    Ok(token_data.claims.sub)
+    let user_id = token_data.claims.sub;
+
+    let user = sqlx::query_as::<_, DbUser>("SELECT * FROM users WHERE id = ?")
+        .bind(&user_id)
+        .fetch_optional(&state.db)
+        .await
+        .map_err(|_| ())?
+        .ok_or(())?;
+
+    Ok(user)
 }

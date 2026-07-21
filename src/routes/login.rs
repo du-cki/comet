@@ -6,7 +6,7 @@ use serde::Deserialize;
 
 use crate::{
     jwt::create_jwt,
-    models::{AppState, AuthResponse, DbUser, ErrorResponse},
+    models::{AppState, AuthResponse, ErrorResponse},
 };
 
 #[derive(Deserialize)]
@@ -19,18 +19,20 @@ pub(crate) async fn route(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<LoginRequest>,
 ) -> Result<Json<AuthResponse>, (StatusCode, Json<ErrorResponse>)> {
-    let user = sqlx::query_as::<_, DbUser>("SELECT id, password, role FROM users WHERE email = ?")
-        .bind(&payload.email)
-        .fetch_optional(&state.db)
-        .await
-        .map_err(|_| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(ErrorResponse {
-                    error: "Database error".into(),
-                }),
-            )
-        })?;
+    let user = sqlx::query!(
+        "SELECT id, password, role FROM users WHERE email = ?",
+        &payload.email
+    )
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "Database error".into(),
+            }),
+        )
+    })?;
 
     let user = user.ok_or((
         StatusCode::UNAUTHORIZED,
