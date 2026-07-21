@@ -3,7 +3,22 @@ import React, { useState } from "react";
 import { cn, useTransitionNavigate } from "../utils";
 import { useWebSocket } from "../providers/WebSocketProvider";
 
-import { Menu, Blinds, Images, Settings, LogOut } from "lucide-react";
+import {
+  Menu,
+  Blinds,
+  Images,
+  Settings,
+  LogOut,
+  ShieldCogCorner,
+} from "lucide-react";
+import { Role } from "../types";
+
+type NavItemT = {
+  label: string;
+  route?: string;
+  icon: any;
+  minRole?: Role;
+};
 
 function NavItem({
   onClick,
@@ -11,7 +26,7 @@ function NavItem({
   isExpanded,
 }: {
   onClick?: any;
-  item: any;
+  item: NavItemT;
   isExpanded: boolean;
 }) {
   return (
@@ -36,7 +51,7 @@ function NavItem({
   );
 }
 
-const topNavItems = [
+const topNavItems: NavItemT[] = [
   {
     label: "Dashboard",
     route: "/dashboard",
@@ -49,9 +64,15 @@ const topNavItems = [
   },
 ];
 
-const bottomNavItems = [
+const bottomNavItems: NavItemT[] = [
+  {
+    label: "Admin Settings",
+    route: "/admin",
+    icon: <ShieldCogCorner />,
+  },
   {
     label: "Settings",
+    route: "/settings",
     icon: <Settings size={20} strokeWidth={1.5} className="shrink-0" />,
   },
 ];
@@ -88,11 +109,11 @@ export function NavBar() {
         </button>
 
         <div className="mt-8 flex flex-col gap-2">
-          {topNavItems.map((item, index) => (
+          {topNavItems.map((item) => (
             <NavItem
-              key={index}
+              key={item.label}
               item={item}
-              onClick={() => onRoute(item.route)}
+              onClick={() => onRoute(item.route!)}
               isExpanded={isExpanded}
             />
           ))}
@@ -100,8 +121,8 @@ export function NavBar() {
       </div>
 
       <div className="flex flex-col gap-2 pb-6">
-        {bottomNavItems.map((item, index) => (
-          <NavItem key={index} item={item} isExpanded={isExpanded} />
+        {bottomNavItems.map((item) => (
+          <NavItem key={item.label} item={item} isExpanded={isExpanded} />
         ))}
 
         <NavItem

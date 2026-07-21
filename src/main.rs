@@ -1,6 +1,7 @@
 use std::{env, sync::Arc};
 use tokio::{net::TcpListener, sync::broadcast};
 
+mod exif;
 mod jwt;
 mod models;
 mod routes;

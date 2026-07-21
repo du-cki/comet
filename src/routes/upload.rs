@@ -16,6 +16,7 @@ use tokio::{
 };
 
 use crate::{
+    exif::{extract_raw_metadata, parse_metadata},
     models::{ErrorResponse, MediaItem},
     utils::parse_filename,
 };
@@ -89,6 +90,16 @@ pub async fn route(
         drop(file);
         let file_hash = encode(&hash.finalize()[..]);
 
+        let raw_meta = extract_raw_metadata(temp_filepath.clone()).await;
+        let parsed_meta = parse_metadata(&raw_meta);
+
+        let lat = parsed_meta.gps.as_ref().map(|g| g.lat);
+        let lng = parsed_meta.gps.as_ref().map(|g| g.lng);
+        let date_taken = parsed_meta.date_taken.clone();
+
+        let metadata_json =
+            serde_json::to_string(&parsed_meta).unwrap_or_else(|_| "{}".to_string());
+
         let file_exists =
             sqlx::query!("SELECT file_path FROM media WHERE file_hash = ?", file_hash)
                 .fetch_optional(&state.db)
@@ -115,10 +126,11 @@ pub async fn route(
         sqlx::query!(
             r#"
             INSERT INTO media (
-                media_id, file_path, user_id, uploaded_at, 
-                content_type, file_hash, file_size, file_ext, original_file_name
+                uploaded_at, media_id, file_path, user_id, 
+                content_type, file_hash, file_size, file_ext, original_file_name,
+                latitude, longitude, date_taken, metadata
             ) 
-            VALUES (?, ?, ?, unixepoch(), ?, ?, ?, ?, ?)
+            VALUES (unixepoch(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             "#,
             final_file_name,
             final_path_used,
@@ -127,7 +139,11 @@ pub async fn route(
             file_hash,
             total_bytes,
             file_ext,
-            org_file_name
+            org_file_name,
+            lat,
+            lng,
+            date_taken,
+            metadata_json
         )
         .execute(&state.db)
         .await

@@ -3,11 +3,11 @@ use axum::{
     extract::{Path, State},
     http::{HeaderMap, HeaderName, HeaderValue, StatusCode},
 };
-use lofty::{file::TaggedFileExt, probe::Probe, tag::Accessor};
 use std::sync::Arc;
 
 use super::AppState;
 use crate::{
+    exif::ParsedMetadata,
     models::ErrorResponse,
     utils::{internal_error, parse_filename},
 };
@@ -24,13 +24,22 @@ pub async fn route(
         }
     }
 
-    let record = sqlx::query!("SELECT file_path FROM media WHERE media_id = ?", media_id)
-        .fetch_optional(&state.db)
-        .await
-        .map_err(internal_error)?;
+    let record = sqlx::query!(
+        r#"
+        SELECT 
+            file_path, content_type, file_size, original_file_name,
+            latitude, longitude, date_taken, metadata
+        FROM media 
+        WHERE media_id = ?
+        "#,
+        media_id
+    )
+    .fetch_optional(&state.db)
+    .await
+    .map_err(internal_error)?;
 
-    let file_path = match record {
-        Some(r) => r.file_path,
+    let record = match record {
+        Some(r) => r,
         None => {
             return Err((
                 StatusCode::NOT_FOUND,
@@ -41,60 +50,53 @@ pub async fn route(
         }
     };
 
-    let headers = tokio::task::spawn_blocking(move || {
-        let mut map = HeaderMap::new();
+    let mut headers = HeaderMap::new();
+    if let Ok(val) = HeaderValue::from_str(&record.content_type) {
+        headers.insert(axum::http::header::CONTENT_TYPE, val);
+    }
 
-        let file = match std::fs::File::open(&file_path) {
-            Ok(f) => f,
-            Err(_) => return map,
-        };
+    if let Ok(val) = HeaderValue::from_str(&record.file_size.to_string()) {
+        headers.insert(axum::http::header::CONTENT_LENGTH, val);
+    }
 
-        let mut bufreader = std::io::BufReader::new(&file);
-        let exifreader = exif::Reader::new();
-
-        if let Ok(exif_data) = exifreader.read_from_container(&mut bufreader) {
-            let mut found_exif = false;
-            for field in exif_data.fields() {
-                found_exif = true;
-                let header_key = format!("x-exif-{}", field.tag).to_lowercase();
-                if let Ok(header_name) = HeaderName::from_bytes(header_key.as_bytes()) {
-                    let val_str = field.display_value().with_unit(&exif_data).to_string();
-                    let safe_val = val_str.replace('\n', " ").replace('\r', "");
-                    if let Ok(header_value) = HeaderValue::from_str(&safe_val) {
-                        map.insert(header_name, header_value);
-                    }
-                }
-            }
-
-            if found_exif {
-                return map;
+    let mut add_header = |key: &'static str, val: Option<String>| {
+        if let Some(v) = val {
+            let safe_val = v.replace('\n', " ").replace('\r', "");
+            if let Ok(header_val) = HeaderValue::from_str(&safe_val) {
+                headers.insert(HeaderName::from_static(key), header_val);
             }
         }
+    };
 
-        if let Ok(tagged_file) = Probe::open(&file_path).and_then(|probe| probe.read()) {
-            if let Some(tag) = tagged_file.primary_tag() {
-                let mut add_audio_header = |key: &str, value: Option<&str>| {
-                    if let Some(val) = value {
-                        let header_key = format!("x-audio-{}", key);
-                        if let Ok(name) = HeaderName::from_bytes(header_key.as_bytes()) {
-                            let safe_val = val.replace('\n', " ").replace('\r', "");
-                            if let Ok(h_val) = HeaderValue::from_str(&safe_val) {
-                                map.insert(name, h_val);
-                            }
-                        }
-                    }
-                };
+    add_header(
+        axum::http::header::CONTENT_DISPOSITION.as_str(),
+        record
+            .original_file_name
+            .map(|s| format!("inline; filename=\"{}\"", s)),
+    );
 
-                add_audio_header("artist", tag.artist().as_deref());
-                add_audio_header("title", tag.title().as_deref());
-                add_audio_header("album", tag.album().as_deref());
-                add_audio_header("genre", tag.genre().as_deref());
-            }
-        }
-        map
-    })
-    .await
-    .map_err(internal_error)?;
+    add_header("x-exif-datetaken", record.date_taken);
+    add_header("x-exif-gpslatitude", record.latitude.map(|s| s.to_string()));
+    add_header(
+        "x-exif-gpslongitude",
+        record.longitude.map(|s| s.to_string()),
+    );
+
+    let metadata_str = record.metadata.unwrap_or_else(|| "{}".to_string());
+    if let Ok(meta) = serde_json::from_str::<ParsedMetadata>(&metadata_str) {
+        add_header("x-exif-camera", meta.camera);
+        add_header("x-exif-resolution", meta.resolution);
+        add_header("x-exif-aperture", meta.aperture);
+        add_header("x-exif-shutterspeed", meta.shutter_speed);
+        add_header("x-exif-iso", meta.iso);
+        add_header("x-exif-focallength", meta.focal_length);
+        add_header("x-exif-flash", meta.flash);
+        add_header("x-exif-whitebalance", meta.white_balance);
+
+        add_header("x-audio-title", meta.title);
+        add_header("x-audio-artist", meta.artist);
+        add_header("x-audio-album", meta.album);
+    }
 
     Ok((StatusCode::OK, headers))
 }

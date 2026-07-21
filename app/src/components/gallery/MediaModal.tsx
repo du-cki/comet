@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import { BASE_URL, formatBytes } from "../../utils";
 
-import type { UploadsList } from "../../types";
+import type { ExifHeaders, UploadsList } from "../../types";
 
 import {
   X,
@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 
 import Button from "../common/Button";
-import { ParsedExif, parseExif } from "../../exif";
 
 function MetaData({
   items,
@@ -72,7 +71,7 @@ interface MediaModalProps {
 
 export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
   const [copied, setCopied] = useState(false);
-  const [exif, setExif] = useState<ParsedExif>({});
+  const [exif, setExif] = useState<ExifHeaders>({});
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -91,12 +90,14 @@ export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
       const exif: Record<string, string> = {};
 
       headers.forEach((value, key) => {
-        if (key.startsWith("x-exif") || key.startsWith("x-audio")) {
-          exif[key] = value;
+        if (key.startsWith("x-exif")) {
+          exif[key.slice(7)] = value;
+        } else if (key.startsWith("x-audio")) {
+          exif[key.slice(8)] = value;
         }
       });
 
-      setExif(parseExif(exif));
+      setExif(exif);
     });
 
     () => {
@@ -108,16 +109,16 @@ export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
     { name: "ID", value: file.media_id },
     exif.resolution && { name: "Resolution", value: exif.resolution },
     exif.camera && { name: "Camera", value: exif.camera },
-    exif.dateTaken && {
+    exif.datetaken && {
       name: "Date Taken",
-      value: new Date(exif.dateTaken.replace(" ", "T")).toLocaleString(),
+      value: new Date(exif.datetaken.replace(" ", "T")).toLocaleString(),
     },
     exif.aperture && { name: "Aperture", value: exif.aperture },
-    exif.shutterSpeed && { name: "Shutter Speed", value: exif.shutterSpeed },
+    exif.shutterspeed && { name: "Shutter Speed", value: exif.shutterspeed },
     exif.iso && { name: "ISO", value: exif.iso },
-    exif.focalLength && { name: "Focal Length", value: exif.focalLength },
+    exif.focallength && { name: "Focal Length", value: exif.focallength },
     exif.flash && { name: "Flash", value: exif.flash },
-    exif.whiteBalance && { name: "White Balance", value: exif.whiteBalance },
+    exif.whitebalance && { name: "White Balance", value: exif.whitebalance },
 
     exif.title && { name: "Title", value: exif.title },
     exif.artist && {
@@ -126,6 +127,12 @@ export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
     },
     exif.album && { name: "Album", value: exif.album },
   ].filter(Boolean) as { name: string; value: string }[];
+
+  const gps = exif.gpslatitude &&
+    exif.gpslongitude && {
+      mapUrl: `https://www.google.com/maps?q=${exif.gpslatitude},${exif.gpslongitude}`,
+      embedUrl: `https://www.google.com/maps?q=${exif.gpslatitude},${exif.gpslongitude}&z=15&output=embed`,
+    };
 
   const handleCopy = async () => {
     try {
@@ -203,20 +210,20 @@ export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
             />
 
             <div className="mt-8 pt-6 border-t border-border space-y-5">
-              {exif.gps && (
+              {gps && (
                 <div>
                   <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
                     Location
                   </h3>
 
                   <a
-                    href={exif.gps.mapUrl}
+                    href={gps.mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block rounded-lg overflow-hidden border border-border hover:opacity-90 transition-opacity"
                   >
                     <iframe
-                      src={exif.gps.embedUrl}
+                      src={gps.embedUrl}
                       className="w-full h-40 pointer-events-none"
                       loading="lazy"
                       title="Photo location"
@@ -224,7 +231,7 @@ export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
                   </a>
 
                   <p className="text-xs text-muted-foreground mt-2">
-                    {exif.gps.lat.toFixed(5)}, {exif.gps.lng.toFixed(5)}
+                    {exif.gpslatitude!}, {exif.gpslongitude}
                   </p>
                 </div>
               )}

@@ -1,0 +1,5 @@
+ALTER TABLE media ADD COLUMN latitude REAL;
+ALTER TABLE media ADD COLUMN longitude REAL;
+ALTER TABLE media ADD COLUMN date_taken TEXT;
+
+ALTER TABLE media ADD COLUMN metadata TEXT;
