@@ -16,7 +16,7 @@ function NavItem({
 }) {
   return (
     <a
-      className="flex items-center px-5 py-3 text-gray-400 hover:text-white hover:bg-white/5 transition-colors group"
+      className="flex items-center px-5 py-3 text-muted-foreground hover:text-accent-foreground hover:bg-accent transition-colors group cursor-pointer"
       title={!isExpanded ? item.label : undefined}
       onClick={onClick}
     >
@@ -25,9 +25,10 @@ function NavItem({
       </div>
 
       <span
-        className={`ml-4 font-medium text-sm whitespace-nowrap transition-opacity duration-300 ${
-          isExpanded ? "opacity-100" : "opacity-0 overflow-hidden w-0"
-        }`}
+        className={cn(
+          "ml-4 font-medium text-sm whitespace-nowrap transition-opacity duration-300",
+          isExpanded ? "opacity-100" : "opacity-0 overflow-hidden w-0",
+        )}
       >
         {item.label}
       </span>
@@ -74,14 +75,14 @@ export function NavBar() {
   return (
     <nav
       className={cn(
-        "fixed top-0 left-0 h-screen bg-card/60 border-l-2 border-border/5 flex flex-col select-none transition-all duration-300 ease-in-out z-50",
+        "fixed top-0 left-0 h-screen bg-card/60 border-l-2 border-border flex flex-col select-none transition-all duration-300 ease-in-out",
         isExpanded ? "w-56" : "w-16",
       )}
     >
       <div className="flex flex-col flex-1 pt-4">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center px-5 py-3 text-muted-foreground hover:text-white hover:bg-white/5 transition-colors focus:outline-none"
+          className="flex items-center px-5 py-3 text-muted-foreground hover:text-accent-foreground hover:bg-accent transition-colors focus:outline-none"
         >
           <Menu size={20} strokeWidth={1.5} className="shrink-0" />
         </button>

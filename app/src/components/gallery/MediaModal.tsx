@@ -15,6 +15,54 @@ import {
 } from "lucide-react";
 
 import Button from "../common/Button";
+import { ParsedExif, parseExif } from "../../exif";
+
+function MetaData({
+  items,
+}: {
+  items: { icon: any; name: string; value: string }[];
+}) {
+  return (
+    <div className="space-y-4">
+      {items.map(({ icon, name, value }) => (
+        <div key={name} className="flex items-center text-muted-foreground">
+          {icon}
+
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+              {name}
+            </span>
+
+            <span className="text-sm text-zinc-200">{value}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ExtendedMetaData({
+  items,
+}: {
+  items: { name: string; value: string }[];
+}) {
+  return (
+    <>
+      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">
+        Extended Metadata
+      </h3>
+
+      <div className="bg-muted/50 rounded-lg p-4 text-xs text-foreground font-mono space-y-2">
+        {items.map(({ name, value }) => (
+          <div key={name} className="flex justify-between">
+            <span className="text-muted-foreground">{name}:</span>{" "}
+            <span className="text-right">{value}</span>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
 
 interface MediaModalProps {
   file: UploadsList["data"]["items"][number];
@@ -24,7 +72,7 @@ interface MediaModalProps {
 
 export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
   const [copied, setCopied] = useState(false);
-  const [exif, setExif] = useState<Record<string, string>>({});
+  const [exif, setExif] = useState<ParsedExif>({});
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -48,13 +96,34 @@ export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
         }
       });
 
-      setExif(exif);
+      setExif(parseExif(exif));
     });
+
+    () => {
+      setExif({});
+    };
   }, []);
+
+  const extendedItems = [
+    { name: "ID", value: file.media_id },
+    exif.resolution && { name: "Resolution", value: exif.resolution },
+    exif.camera && { name: "Camera", value: exif.camera },
+    exif.dateTaken && {
+      name: "Date Taken",
+      value: new Date(exif.dateTaken.replace(" ", "T")).toLocaleString(),
+    },
+    exif.aperture && { name: "Aperture", value: exif.aperture },
+    exif.shutterSpeed && { name: "Shutter Speed", value: exif.shutterSpeed },
+    exif.iso && { name: "ISO", value: exif.iso },
+    exif.focalLength && { name: "Focal Length", value: exif.focalLength },
+    exif.flash && { name: "Flash", value: exif.flash },
+    exif.whiteBalance && { name: "White Balance", value: exif.whiteBalance },
+  ].filter(Boolean) as { name: string; value: string }[];
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(url);
+
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -67,17 +136,17 @@ export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-background/80 backdrop-blur-md"
       onClick={onClose}
     >
       <div
-        className="bg-[#09090b] w-full max-w-6xl max-h-[90vh] h-full rounded-2xl flex flex-col md:flex-row overflow-hidden border border-white/10 shadow-2xl"
+        className="bg-card w-full max-w-6xl max-h-[90vh] h-full rounded-2xl flex flex-col md:flex-row overflow-hidden border border-border shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex-1 bg-black/40 flex items-center justify-center p-4 relative min-h-[40vh]">
+        <div className="flex-1 bg-muted/30 flex items-center justify-center p-4 relative min-h-[40vh]">
           <button
             onClick={onClose}
-            className="absolute top-4 left-4 p-2 rounded-full bg-black/50 text-white hover:bg-white/20 backdrop-blur-md transition-colors z-10"
+            className="absolute top-4 left-4 p-2 rounded-full bg-background/50 text-muted-foreground hover:bg-accent hover:text-accent-foreground backdrop-blur-md transition-colors z-10"
           >
             <X size={20} />
           </button>
@@ -100,80 +169,64 @@ export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
           )}
         </div>
 
-        <div className="w-full md:w-80 lg:w-96 bg-[#09090b] flex flex-col border-t md:border-t-0 md:border-l border-white/10 overflow-y-auto">
+        <div className="w-full md:w-80 lg:w-96 bg-card flex flex-col border-t md:border-t-0 md:border-l border-border overflow-y-auto">
           <div className="p-6 flex-1">
-            <h2 className="text-xl font-bold text-white break-all leading-tight mb-6">
+            <h2 className="text-xl font-bold text-foreground break-all leading-tight mb-6">
               {file.original_file_name}
             </h2>
 
-            <div className="space-y-4">
-              <div className="flex items-center text-zinc-400">
-                <HardDrive size={16} className="mr-3" />
+            <MetaData
+              items={[
+                {
+                  icon: <HardDrive size={16} className="mr-3" />,
+                  name: "File Size",
+                  value: formatBytes(file.file_size),
+                },
+                {
+                  icon: <FileType size={16} className="mr-3" />,
+                  name: "Content Type",
+                  value: file.content_type,
+                },
+                {
+                  icon: <Calendar size={16} className="mr-3" />,
+                  name: "Uploaded",
+                  value: new Date(file.uploaded_at * 1000).toLocaleString(),
+                },
+              ]}
+            />
 
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500">
-                    File Size
-                  </span>
+            <div className="mt-8 pt-6 border-t border-border space-y-5">
+              {exif.gps && (
+                <div>
+                  <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
+                    Location
+                  </h3>
 
-                  <span className="text-sm text-zinc-200">
-                    {formatBytes(file.file_size)}
-                  </span>
+                  <a
+                    href={exif.gps.mapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-lg overflow-hidden border border-border hover:opacity-90 transition-opacity"
+                  >
+                    <iframe
+                      src={exif.gps.embedUrl}
+                      className="w-full h-40 pointer-events-none"
+                      loading="lazy"
+                      title="Photo location"
+                    />
+                  </a>
+
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {exif.gps.lat.toFixed(5)}, {exif.gps.lng.toFixed(5)}
+                  </p>
                 </div>
-              </div>
+              )}
 
-              <div className="flex items-center text-zinc-400">
-                <FileType size={16} className="mr-3" />
-
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500">
-                    Content Type
-                  </span>
-
-                  <span className="text-sm text-zinc-200">
-                    {file.content_type}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center text-zinc-400">
-                <Calendar size={16} className="mr-3" />
-
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500">
-                    Uploaded
-                  </span>
-
-                  <span className="text-sm text-zinc-200">
-                    {new Date(file.uploaded_at * 1000).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 pt-6 border-t border-white/5">
-              <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">
-                Extended Metadata
-              </h3>
-
-              <div className="bg-white/5 rounded-lg p-4 text-xs text-zinc-400 font-mono space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-zinc-500">ID:</span>{" "}
-                  <span>{file.media_id}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-zinc-500">Resolution:</span>{" "}
-                  <span>--</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-zinc-500">Camera:</span> <span>--</span>
-                </div>
-              </div>
+              <ExtendedMetaData items={extendedItems} />
             </div>
           </div>
 
-          <div className="p-6 border-t border-white/10 bg-[#09090b]/80 backdrop-blur-xl flex gap-3">
+          <div className="p-6 border-t border-border bg-card/80 backdrop-blur-xl flex gap-3">
             <Button
               variant="secondary"
               onClick={handleCopy}
