@@ -1,6 +1,6 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use jsonwebtoken::{EncodingKey, Header, encode};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -34,5 +34,16 @@ pub fn create_jwt(
         &Header::default(),
         &claims,
         &EncodingKey::from_secret(secret.as_bytes()),
+    )
+}
+
+pub fn validate_jwt(
+    token: &str,
+    secret: &str,
+) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
+    decode::<Claims>(
+        token,
+        &DecodingKey::from_secret(secret.as_bytes()),
+        &Validation::default(),
     )
 }

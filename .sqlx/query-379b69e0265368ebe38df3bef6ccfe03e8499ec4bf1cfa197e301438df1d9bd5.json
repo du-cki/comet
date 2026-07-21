@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT max_upload_size_mb FROM settings WHERE id = 1",
+  "describe": {
+    "columns": [
+      {
+        "name": "max_upload_size_mb",
+        "ordinal": 0,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "settings",
+            "name": "max_upload_size_mb"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "379b69e0265368ebe38df3bef6ccfe03e8499ec4bf1cfa197e301438df1d9bd5"
+}

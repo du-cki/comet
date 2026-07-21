@@ -1,0 +1,171 @@
+use axum::{
+    Json,
+    extract::{Extension, Multipart, State},
+    http::StatusCode,
+};
+use std::sync::Arc;
+
+use hex::encode;
+use rand::{Rng, distributions::Alphanumeric};
+use serde::Serialize;
+use sha2::{Digest, Sha256};
+
+use tokio::{
+    fs::{self, File},
+    io::AsyncWriteExt,
+};
+
+use crate::{
+    models::{ErrorResponse, MediaItem},
+    utils::parse_filename,
+};
+use crate::{
+    models::{UserBroadcast, WsEvent},
+    utils::{generate_file_path, internal_error},
+};
+
+use super::AppState;
+
+#[derive(Serialize, Debug)]
+pub struct UploadResponse {
+    pub file: String,
+    pub file_url: String,
+    pub file_size: usize,
+}
+
+pub async fn route(
+    State(state): State<Arc<AppState>>,
+    Extension(user_id): Extension<i64>,
+    mut multipart: Multipart,
+) -> Result<(StatusCode, Json<UploadResponse>), (StatusCode, Json<ErrorResponse>)> {
+    let max_upload_mb: Option<i64> =
+        sqlx::query_scalar!("SELECT max_upload_size_mb FROM settings WHERE id = 1")
+            .fetch_one(&state.db)
+            .await
+            .map_err(internal_error)?;
+
+    let max_bytes = max_upload_mb.map(|mb| mb * 1024 * 1024);
+
+    if let Ok(Some(mut field)) = multipart.next_field().await {
+        let org_file_name = field.file_name().unwrap_or("unknown").to_string();
+        let file_ext = parse_filename(&org_file_name).1;
+        let content_type = field
+            .content_type()
+            .unwrap_or("application/octet-stream")
+            .to_string();
+
+        let temp_filename: String = rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(16)
+            .map(char::from)
+            .collect();
+        let temp_filepath = format!("{}/tmp_{}", state.config.file_save_path, temp_filename);
+
+        let mut file = File::create(&temp_filepath).await.map_err(internal_error)?;
+        let mut hash = Sha256::new();
+        let mut total_bytes = 0i64;
+
+        while let Some(chunk) = field.chunk().await.map_err(internal_error)? {
+            total_bytes += chunk.len() as i64;
+
+            if let Some(limit) = max_bytes {
+                if total_bytes > limit {
+                    drop(file);
+                    let _ = fs::remove_file(&temp_filepath).await;
+
+                    return Err((
+                        StatusCode::PAYLOAD_TOO_LARGE,
+                        Json(ErrorResponse {
+                            error: "File exceeds maximum allowed size".to_string(),
+                        }),
+                    ));
+                }
+            }
+
+            hash.update(&chunk);
+            file.write_all(&chunk).await.map_err(internal_error)?;
+        }
+
+        drop(file);
+        let file_hash = encode(&hash.finalize()[..]);
+
+        let file_exists =
+            sqlx::query!("SELECT file_path FROM media WHERE file_hash = ?", file_hash)
+                .fetch_optional(&state.db)
+                .await
+                .map_err(internal_error)?;
+
+        let (final_file_name, final_fp) = generate_file_path(
+            state.config.file_name_length,
+            &state.config.file_save_path,
+            &file_hash,
+            &file_ext,
+        );
+
+        let final_path_used = if let Some(record) = file_exists {
+            let _ = fs::remove_file(&temp_filepath).await;
+            record.file_path
+        } else {
+            fs::rename(&temp_filepath, &final_fp)
+                .await
+                .map_err(internal_error)?;
+            final_fp
+        };
+
+        sqlx::query!(
+            r#"
+            INSERT INTO media (
+                media_id, file_path, user_id, uploaded_at, 
+                content_type, file_hash, file_size, file_ext, original_file_name
+            ) 
+            VALUES (?, ?, ?, unixepoch(), ?, ?, ?, ?, ?)
+            "#,
+            final_file_name,
+            final_path_used,
+            user_id,
+            content_type,
+            file_hash,
+            total_bytes,
+            file_ext,
+            org_file_name
+        )
+        .execute(&state.db)
+        .await
+        .map_err(internal_error)?;
+
+        let mut file_url = format!("/view/{}", &final_file_name);
+        if state.config.enforce_file_extensions {
+            if let Some(ext) = file_ext {
+                file_url = format!("{}.{}", file_url, ext);
+            }
+        }
+
+        let _ = state.tx.send(UserBroadcast {
+            user_id,
+            event: WsEvent::FileUpload(MediaItem {
+                media_id: final_file_name.clone(),
+                content_type,
+                file_size: total_bytes,
+                file_url: file_url.clone(),
+                original_file_name: Some(org_file_name.clone()),
+                uploaded_at: 1,
+            }),
+        });
+
+        return Ok((
+            StatusCode::OK,
+            Json(UploadResponse {
+                file: final_file_name,
+                file_size: total_bytes as usize,
+                file_url,
+            }),
+        ));
+    }
+
+    Err((
+        StatusCode::BAD_REQUEST,
+        Json(ErrorResponse {
+            error: "No file field found in request".to_owned(),
+        }),
+    ))
+}

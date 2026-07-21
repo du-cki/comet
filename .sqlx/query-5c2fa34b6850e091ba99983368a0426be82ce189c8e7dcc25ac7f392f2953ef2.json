@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT allow_public_signups FROM settings WHERE id = 1",
+  "describe": {
+    "columns": [
+      {
+        "name": "allow_public_signups",
+        "ordinal": 0,
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "settings",
+            "name": "allow_public_signups"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "5c2fa34b6850e091ba99983368a0426be82ce189c8e7dcc25ac7f392f2953ef2"
+}

@@ -1,9 +1,10 @@
 use std::{env, sync::Arc};
-use tokio::net::TcpListener;
+use tokio::{net::TcpListener, sync::broadcast};
 
 mod jwt;
 mod models;
 mod routes;
+mod utils;
 
 #[tokio::main]
 async fn main() {
@@ -15,13 +16,38 @@ async fn main() {
 
     sqlx::migrate!("./migrations").run(&pool).await.unwrap();
 
+    let (tx, _) = broadcast::channel(100);
+
     let state = Arc::new(models::AppState {
         db: pool,
         // TODO: panic when no jwt secret has passed
         jwt_secret: env::var("JWT_SECRET").unwrap_or(String::from("burgers")),
+        config: models::Config {
+            // TODO: configure for docker env:
+            file_save_path: String::from("uploads/"),
+
+            // TODO: move to settings table:
+            file_name_length: 8,
+            enforce_file_extensions: true,
+        },
+        tx,
     });
 
-    let app = routes::with_state(state);
+    let mut app = routes::with_state(state);
+
+    #[cfg(debug_assertions)]
+    {
+        use tower_http::cors::{Any, CorsLayer};
+
+        tracing::warn!("running in debug mode, CORS is disabled");
+        let cors = CorsLayer::new()
+            .allow_origin(Any)
+            .allow_headers(Any)
+            .expose_headers(Any)
+            .allow_methods(Any);
+
+        app = app.layer(cors);
+    }
 
     let listener = TcpListener::bind(format!(
         "0.0.0.0:{}",

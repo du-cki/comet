@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT uploaded_at FROM media WHERE media_id = ? AND user_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "uploaded_at",
+        "ordinal": 0,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "uploaded_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "13213e100310fa884903ec4211121f21fbe80fcb0728fbc9e9a268cb61f5fa10"
+}

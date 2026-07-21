@@ -4,24 +4,42 @@ import { StrictMode } from "react";
 // @ts-ignore
 import "./global.css";
 
-import { createBrowserRouter, RouterProvider } from "react-router";
-import { Home } from "./routes/Home";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-let container = document.getElementById("app")!;
-let root = createRoot(container);
+import { WebSocketProvider } from "./providers/WebSocketProvider";
+import ProtectedLayout from "./providers/ProtectedLayout";
 
-// const BASE_URL = process.env.APP_API_URL;
-// console.log(BASE);
+import Home from "./routes/Home";
+import Dashboard from "./routes/Dashboard";
+import Gallery from "./routes/Gallery";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Home />,
   },
+  {
+    element: <ProtectedLayout />,
+    children: [
+      {
+        path: "/dashboard",
+        element: <Dashboard />,
+      },
+      {
+        path: "/gallery",
+        element: <Gallery />,
+      },
+    ],
+  },
 ]);
+
+let container = document.getElementById("app")!;
+let root = createRoot(container);
 
 root.render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <WebSocketProvider>
+      <RouterProvider router={router} />
+    </WebSocketProvider>
   </StrictMode>,
 );

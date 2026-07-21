@@ -1,0 +1,33 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT \n            file_path, \n            (SELECT COUNT(*) FROM media m2 WHERE m2.file_hash = m1.file_hash) AS \"count!: i64\"\n        FROM media m1\n        WHERE m1.media_id = ? AND m1.user_id = ?;\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "file_path",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "file_path"
+          }
+        }
+      },
+      {
+        "name": "count!: i64",
+        "ordinal": 1,
+        "type_info": "Integer",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "a06bd51eec64757d413ea4f2b2bbda78edebfb667183ab5fbc5df087410a6658"
+}

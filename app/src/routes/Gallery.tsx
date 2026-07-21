@@ -1,0 +1,194 @@
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useWebSocket } from "../providers/WebSocketProvider";
+import { FileDelete, FileUpload, UploadsList } from "../types";
+import VideoEmbed from "../components/gallery/VideoEmbed";
+import AudioEmbed from "../components/gallery/AudioEmbed";
+import { BASE_URL } from "../utils";
+import { MediaModal } from "../components/gallery/MediaModal";
+import { UploadDropdown } from "../components/gallery/UploadDropdown";
+import { LoaderCircle } from "lucide-react";
+
+export default function Gallery() {
+  const [files, setFiles] = useState<UploadsList["data"]["items"]>([]);
+  const [selectedFile, setSelectedFile] = useState<
+    UploadsList["data"]["items"][0] | null
+  >(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const { ws, status } = useWebSocket();
+
+  const cursorRef = useRef<string | null>(null);
+  const isFetchingRef = useRef(false);
+  const isFirstPageRef = useRef(true);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const fetchPage = useCallback(
+    (cursor: string | null) => {
+      if (!ws || status !== "connected") return;
+      if (isFetchingRef.current) return;
+      if (!cursor && !isFirstPageRef.current) {
+        return;
+      }
+
+      isFetchingRef.current = true;
+      isFirstPageRef.current = cursor === null;
+      if (cursor !== null) setIsLoadingMore(true);
+
+      ws.send(
+        JSON.stringify({
+          action: "GetUploads",
+          limit: 20,
+          cursor,
+        }),
+      );
+    },
+    [ws, status],
+  );
+
+  useEffect(() => {
+    if (!ws || status !== "connected") return;
+
+    cursorRef.current = null;
+    setFiles([]);
+    setHasMore(true);
+    fetchPage(null);
+
+    const handleMessage = (ev: MessageEvent) => {
+      const e = JSON.parse(ev.data);
+
+      if (e.type === "UploadsList") {
+        const { items, next_cursor } = (e as UploadsList).data;
+
+        setFiles((old) =>
+          isFirstPageRef.current ? items : [...old, ...items],
+        );
+
+        cursorRef.current = next_cursor;
+        setHasMore(next_cursor !== null);
+
+        isFetchingRef.current = false;
+        setIsLoadingMore(false);
+      } else if (e.type === "FileUpload") {
+        const { data } = e as FileUpload;
+
+        setFiles((oldFiles) => [data, ...oldFiles]);
+      } else if (e.type === "FileDelete") {
+        const { data } = e as FileDelete;
+
+        setFiles((oldFiles) =>
+          oldFiles.filter((file) => file.media_id !== data),
+        );
+      }
+    };
+
+    ws.addEventListener("message", handleMessage);
+    return () => {
+      ws.removeEventListener("message", handleMessage);
+    };
+  }, [ws, status, fetchPage]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetchingRef.current) {
+          fetchPage(cursorRef.current);
+        }
+      },
+      { rootMargin: "400px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, fetchPage]);
+
+  const handleDelete = async (id: string) => {
+    setSelectedFile(null);
+
+    const token = localStorage.getItem("auth_token");
+
+    const req = await fetch(`${BASE_URL}/view/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (req.status === 401) {
+      window.location.reload();
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between p-4 md:px-6 border-b border-white/5 mb-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">
+            Gallery
+          </h1>
+
+          <p className="text-sm text-zinc-500">
+            Manage and view your uploaded files
+          </p>
+        </div>
+
+        <UploadDropdown />
+      </div>
+
+      <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4 p-4">
+        {files.map((file) => {
+          const isVideo = file.content_type.startsWith("video/");
+          const isAudio = file.content_type.startsWith("audio/");
+
+          const url = `${BASE_URL}${file.file_url}`;
+
+          return (
+            <div
+              key={file.media_id}
+              className="break-inside-avoid"
+              onClick={() => setSelectedFile(file)}
+            >
+              {isAudio ? (
+                <AudioEmbed src={url} name={file.original_file_name} />
+              ) : isVideo ? (
+                <VideoEmbed src={url} />
+              ) : (
+                <div className="relative group rounded-lg overflow-hidden bg-card/20 border border-white/5">
+                  <img
+                    src={url}
+                    alt={file.original_file_name}
+                    className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {hasMore && (
+        <div ref={sentinelRef} className="flex justify-center py-6">
+          {isLoadingMore && (
+            <LoaderCircle
+              className="animate-spin text-muted-foreground"
+              size={24}
+            />
+          )}
+        </div>
+      )}
+
+      {selectedFile && (
+        <MediaModal
+          file={selectedFile}
+          onClose={() => setSelectedFile(null)}
+          onDelete={handleDelete}
+        />
+      )}
+    </div>
+  );
+}

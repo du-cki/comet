@@ -1,0 +1,86 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT media_id, file_ext, file_size, uploaded_at, content_type, original_file_name\n        FROM media\n        WHERE user_id = ?\n          AND (? IS NULL OR uploaded_at < ? OR (uploaded_at = ? AND media_id < ?))\n        ORDER BY uploaded_at DESC, media_id DESC\n        LIMIT ?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "media_id",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "media_id"
+          }
+        }
+      },
+      {
+        "name": "file_ext",
+        "ordinal": 1,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "file_ext"
+          }
+        }
+      },
+      {
+        "name": "file_size",
+        "ordinal": 2,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "file_size"
+          }
+        }
+      },
+      {
+        "name": "uploaded_at",
+        "ordinal": 3,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "uploaded_at"
+          }
+        }
+      },
+      {
+        "name": "content_type",
+        "ordinal": 4,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "content_type"
+          }
+        }
+      },
+      {
+        "name": "original_file_name",
+        "ordinal": 5,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "original_file_name"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "cbe92f909ba05b3448dd24494d6fdf88fa531e853b01e2685d7a5d62712d85a9"
+}

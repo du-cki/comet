@@ -21,7 +21,7 @@ pub(crate) async fn route(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<SignupRequest>,
 ) -> Result<Json<AuthResponse>, (StatusCode, Json<ErrorResponse>)> {
-    let user_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM users")
+    let user_count: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM users")
         .fetch_one(&state.db)
         .await
         .unwrap_or(0);
@@ -30,7 +30,7 @@ pub(crate) async fn route(
         Role::Admin
     } else {
         let allow_signups: bool =
-            sqlx::query_scalar("SELECT allow_public_signups FROM settings WHERE id = 1")
+            sqlx::query_scalar!("SELECT allow_public_signups FROM settings WHERE id = 1")
                 .fetch_one(&state.db)
                 .await
                 .unwrap_or(false);

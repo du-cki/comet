@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT file_path, content_type FROM media\n        WHERE media_id = ? AND (\n            ? = 0 OR file_ext = ?\n        )\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "file_path",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "file_path"
+          }
+        }
+      },
+      {
+        "name": "content_type",
+        "ordinal": 1,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "content_type"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "e019aa3e5d886bebe522644006f9b771604f4685f3932715c0eb24e5be31b2a5"
+}

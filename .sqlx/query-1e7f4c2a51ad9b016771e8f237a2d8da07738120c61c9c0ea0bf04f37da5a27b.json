@@ -1,0 +1,49 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT\n            COUNT(media_id) as total_files,\n            SUM(CASE WHEN uploaded_at >= unixepoch('now', '-1 month') THEN 1 ELSE 0 END) as total_files_trend,\n\n            SUM(file_size) as storage_used_bytes,\n            SUM(CASE WHEN uploaded_at >= unixepoch('now', '-1 month') THEN file_size ELSE 0 END) as storage_used_bytes_trend,\n\n            AVG(file_size) as avg_file_size\n        FROM media\n        WHERE user_id = ?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "total_files",
+        "ordinal": 0,
+        "type_info": "Integer",
+        "origin": "Expression"
+      },
+      {
+        "name": "total_files_trend",
+        "ordinal": 1,
+        "type_info": "Integer",
+        "origin": "Expression"
+      },
+      {
+        "name": "storage_used_bytes",
+        "ordinal": 2,
+        "type_info": "Integer",
+        "origin": "Expression"
+      },
+      {
+        "name": "storage_used_bytes_trend",
+        "ordinal": 3,
+        "type_info": "Integer",
+        "origin": "Expression"
+      },
+      {
+        "name": "avg_file_size",
+        "ordinal": 4,
+        "type_info": "Integer",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "1e7f4c2a51ad9b016771e8f237a2d8da07738120c61c9c0ea0bf04f37da5a27b"
+}
