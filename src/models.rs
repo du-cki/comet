@@ -32,6 +32,8 @@ pub enum WsEvent {
 
         average_file_size_bytes: i64,
         views: i64,
+
+        file_types: Vec<FileTypeStat>,
     },
     UploadsList {
         items: Vec<MediaItem>,
@@ -50,6 +52,12 @@ pub enum WSClientCommand {
         cursor: Option<String>,
         limit: Option<i64>,
     },
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct FileTypeStat {
+    pub name: String,
+    pub amount: i64,
 }
 
 #[derive(Clone, Debug)]

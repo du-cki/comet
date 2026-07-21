@@ -4,12 +4,14 @@ import { BASE_URL, useTransitionNavigate } from "../utils";
 
 import { LoaderCircle } from "lucide-react";
 
+import Card from "../components/common/Card";
+
 import Login from "../components/home/Login";
 import Signup from "../components/home/Signup";
 import CMA from "../components/home/CMA";
 
 export default function Home() {
-  const [doesAccountsExist, setDoesAccountsExist] = useState<boolean | null>(
+  const [doesAnyAccountExist, setDoesAccountsExist] = useState<boolean | null>(
     null,
   );
   const [view, setView] = useState<"login" | "signup">("login");
@@ -28,12 +30,12 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative flex min-h-svh items-center justify-center overflow-hidden px-4">
-      <div className="relative w-full max-w-sm">
-        <div className="flex flex-col gap-6 rounded-2xl border border-border bg-card/60 p-6 shadow-2xl shadow-black/40 backdrop-blur">
-          <div className="flex flex-col items-center text-center gap-1.5">
+    <main className="flex min-h-svh items-center justify-center overflow-hidden px-4">
+      <div className="w-full max-w-sm">
+        <Card className="space-y-6 p-6 rounded-2xl shadow-2xl shadow-black/40 backdrop-blur">
+          <div className="text-center space-y-1.5">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              {doesAccountsExist === false
+              {doesAnyAccountExist === false
                 ? "Setup Master Account"
                 : view === "login"
                   ? "Sign In"
@@ -41,13 +43,13 @@ export default function Home() {
             </h1>
 
             <p className="text-sm text-muted-foreground">
-              {doesAccountsExist === false
+              {doesAnyAccountExist === false
                 ? "Create the initial administrator account"
                 : "Please enter your details to continue"}
             </p>
           </div>
 
-          {doesAccountsExist === null && (
+          {doesAnyAccountExist === null && (
             <div className="flex w-full items-center justify-center py-8">
               <LoaderCircle
                 className="animate-spin text-muted-foreground"
@@ -56,7 +58,7 @@ export default function Home() {
             </div>
           )}
 
-          {doesAccountsExist === true && (
+          {doesAnyAccountExist === true && (
             <>
               {view === "login" ? (
                 <Login onAuth={handleAuth} />
@@ -80,8 +82,8 @@ export default function Home() {
             </>
           )}
 
-          {doesAccountsExist === false && <CMA onAuth={handleAuth} />}
-        </div>
+          {doesAnyAccountExist === false && <CMA onAuth={handleAuth} />}
+        </Card>
       </div>
     </main>
   );

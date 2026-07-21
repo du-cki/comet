@@ -77,6 +77,7 @@ export default function AudioEmbed({ src, name }: AudioCardProps) {
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleTimeUpdate}
         onEnded={handleEnded}
+        preload="none"
       />
 
       <div className="relative aspect-square w-full bg-muted flex items-center justify-center overflow-hidden">

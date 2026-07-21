@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n        SELECT \n            file_path, content_type, file_size, original_file_name,\n            latitude, longitude, date_taken, metadata\n        FROM media \n        WHERE media_id = ?\n        ",
+  "query": "\n        SELECT\n            file_path, content_type, file_size, original_file_name,\n            latitude, longitude, date_taken, metadata\n        FROM media\n        WHERE media_id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -106,5 +106,5 @@
       true
     ]
   },
-  "hash": "e5ca9ecf1cacaa98c05ce4b8bea4508d0a0e3940f2ad2f4532243183ecf2c1d9"
+  "hash": "47844e92860a6a6c413be4123bb1d529856175b813c52dc0c0b66b4baeec31f0"
 }

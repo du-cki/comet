@@ -19,6 +19,8 @@ export type DashboardStats = WebSocketMessage<
 
     average_file_size_bytes: number;
     views: number;
+
+    file_types: { name: string; amount: number }[];
   }
 >;
 

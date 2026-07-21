@@ -2,6 +2,7 @@ import React, { ComponentProps } from "react";
 
 import { MoveDown, MoveUp } from "lucide-react";
 import { cn } from "../utils";
+import Card from "./common/Card";
 
 interface StatProps {
   name: string;
@@ -16,7 +17,7 @@ export function Stat({ name, value, trend }: StatProps) {
   return (
     <div className="flex-1 flex flex-col justify-center p-4 sm:p-5">
       <div className="flex items-baseline gap-2">
-        <span className="text-xl sm:text-2xl font-bold text-white">
+        <span className="text-xl sm:text-2xl font-bold text-card-foreground">
           {value}
         </span>
 
@@ -38,7 +39,7 @@ export function Stat({ name, value, trend }: StatProps) {
         )}
       </div>
 
-      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-1">
+      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-1">
         {name}
       </span>
     </div>
@@ -49,17 +50,15 @@ type ContainerProps = {} & ComponentProps<"div">;
 
 export function StatContainer({ children, ...props }: ContainerProps) {
   return (
-    <div
+    <Card
       {...props}
       className={cn(
-        `flex flex-col md:flex-row 
-        bg-card/60 rounded-lg overflow-hidden
-        divide-y-2 md:divide-y-0 md:divide-x-2 divide-white/5 
-        border-2 border-white/5`,
+        "flex flex-col md:flex-row overflow-hidden",
+        "divide-x-0 divide-y md:divide-x md:divide-y-0 divide-border",
         props.className,
       )}
     >
       {children}
-    </div>
+    </Card>
   );
 }

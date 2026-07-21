@@ -26,10 +26,10 @@ pub async fn route(
 
     let record = sqlx::query!(
         r#"
-        SELECT 
+        SELECT
             file_path, content_type, file_size, original_file_name,
             latitude, longitude, date_taken, metadata
-        FROM media 
+        FROM media
         WHERE media_id = ?
         "#,
         media_id
