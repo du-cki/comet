@@ -1,4 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
+
+import { BASE_URL, cn } from "../../utils";
+
 import {
   ImageUp,
   File as FileIcon,
@@ -9,7 +12,6 @@ import {
   AlertCircle,
   Clock,
 } from "lucide-react";
-import { BASE_URL } from "../../utils";
 import Button from "../common/Button";
 
 type UploadTask = {
@@ -23,10 +25,12 @@ export function UploadDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [uploads, setUploads] = useState<UploadTask[]>([]);
 
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const dragCounter = useRef(0);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+  const addFiles = (files: File[]) => {
     if (files.length === 0) return;
 
     const newTasks: UploadTask[] = files.map((file) => ({
@@ -37,8 +41,54 @@ export function UploadDropdown() {
     }));
 
     setUploads((prev) => [...prev, ...newTasks]);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    addFiles(files);
 
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    dragCounter.current += 1;
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDraggingOver(true);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (e.dataTransfer.types.includes("Files")) {
+      e.dataTransfer.dropEffect = "copy";
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    dragCounter.current -= 1;
+    if (dragCounter.current <= 0) {
+      dragCounter.current = 0;
+      setIsDraggingOver(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    dragCounter.current = 0;
+    setIsDraggingOver(false);
+
+    const files = Array.from(e.dataTransfer.files || []);
+    addFiles(files);
   };
 
   useEffect(() => {
@@ -136,14 +186,30 @@ export function UploadDropdown() {
             <div className="flex flex-col gap-3 shrink-0">
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors group"
+                onDragEnter={handleDragEnter}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={cn(
+                  "border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors group",
+                  isDraggingOver
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-primary/50 hover:bg-primary/5",
+                )}
               >
-                <div className="w-10 h-10 rounded-full bg-muted group-hover:bg-primary/20 flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
+                <div
+                  className={cn(
+                    "w-10 h-10 rounded-full bg-muted group-hover:bg-primary/20 flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors",
+                    isDraggingOver
+                      ? "bg-primary/20 text-primary"
+                      : "bg-muted group-hover:bg-primary/20 text-muted-foreground group-hover:text-primary",
+                  )}
+                >
                   <ImageUp size={20} />
                 </div>
 
                 <span className="text-sm font-medium text-foreground mt-2">
-                  Click to browse
+                  {isDraggingOver ? "Drop files to upload" : "Click to browse"}
                 </span>
 
                 <span className="text-xs text-foreground">
