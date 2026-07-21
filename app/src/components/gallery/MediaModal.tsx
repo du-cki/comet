@@ -109,10 +109,12 @@ export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
             <div className="space-y-4">
               <div className="flex items-center text-zinc-400">
                 <HardDrive size={16} className="mr-3" />
+
                 <div className="flex flex-col">
                   <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500">
                     File Size
                   </span>
+
                   <span className="text-sm text-zinc-200">
                     {formatBytes(file.file_size)}
                   </span>
@@ -121,6 +123,7 @@ export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
 
               <div className="flex items-center text-zinc-400">
                 <FileType size={16} className="mr-3" />
+
                 <div className="flex flex-col">
                   <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500">
                     Content Type
@@ -134,6 +137,7 @@ export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
 
               <div className="flex items-center text-zinc-400">
                 <Calendar size={16} className="mr-3" />
+
                 <div className="flex flex-col">
                   <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500">
                     Uploaded

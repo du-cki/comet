@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { useTransitionNavigate } from "../utils";
+import { cn, useTransitionNavigate } from "../utils";
 import { useWebSocket } from "../providers/WebSocketProvider";
 
 import { Menu, Blinds, Images, Settings, LogOut } from "lucide-react";
@@ -73,14 +73,15 @@ export function NavBar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 h-screen bg-card/60 border-l-2 border-white/5 flex flex-col select-none transition-all duration-300 ease-in-out ${
-        isExpanded ? "w-56" : "w-16"
-      }`}
+      className={cn(
+        "fixed top-0 left-0 h-screen bg-card/60 border-l-2 border-border/5 flex flex-col select-none transition-all duration-300 ease-in-out z-50",
+        isExpanded ? "w-56" : "w-16",
+      )}
     >
       <div className="flex flex-col flex-1 pt-4">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center px-5 py-3 text-gray-400 hover:text-white hover:bg-white/5 transition-colors focus:outline-none"
+          className="flex items-center px-5 py-3 text-muted-foreground hover:text-white hover:bg-white/5 transition-colors focus:outline-none"
         >
           <Menu size={20} strokeWidth={1.5} className="shrink-0" />
         </button>
