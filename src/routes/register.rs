@@ -8,6 +8,7 @@ use serde::Deserialize;
 use crate::{
     jwt::{create_jwt, current_timestamp},
     models::{AppState, AuthResponse, ErrorResponse, Role},
+    utils::internal_error,
 };
 
 #[derive(Deserialize)]
@@ -21,6 +22,21 @@ pub(crate) async fn route(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<SignupRequest>,
 ) -> Result<Json<AuthResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let config =
+        sqlx::query!("SELECT allow_public_signups, maintenance_mode FROM settings WHERE id = 1")
+            .fetch_one(&state.db)
+            .await
+            .map_err(internal_error)?;
+
+    if config.maintenance_mode {
+        return Err((
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(ErrorResponse {
+                error: "This app is in maintenance mode.".to_string(),
+            }),
+        ));
+    }
+
     let user_count: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM users")
         .fetch_one(&state.db)
         .await
@@ -29,13 +45,7 @@ pub(crate) async fn route(
     let role = if user_count == 0 {
         Role::Admin
     } else {
-        let allow_signups: bool =
-            sqlx::query_scalar!("SELECT allow_public_signups FROM settings WHERE id = 1")
-                .fetch_one(&state.db)
-                .await
-                .unwrap_or(false);
-
-        if !allow_signups {
+        if !config.allow_public_signups {
             return Err((
                 StatusCode::FORBIDDEN,
                 Json(ErrorResponse {

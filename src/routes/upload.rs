@@ -40,11 +40,20 @@ pub async fn route(
     mut multipart: Multipart,
 ) -> Result<(StatusCode, Json<UploadResponse>), (StatusCode, Json<ErrorResponse>)> {
     let config = sqlx::query!(
-        "SELECT max_upload_size_mb, enforce_file_extensions, file_name_length FROM settings WHERE id = 1"
+        "SELECT max_upload_size_mb, enforce_file_extensions, file_name_length, maintenance_mode FROM settings WHERE id = 1"
     )
     .fetch_one(&state.db)
     .await
     .map_err(internal_error)?;
+
+    if config.maintenance_mode {
+        return Err((
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(ErrorResponse {
+                error: "This app is in maintenance mode.".to_string(),
+            }),
+        ));
+    }
 
     let max_bytes = config.max_upload_size_mb.map(|mb| mb * 1024 * 1024);
 
