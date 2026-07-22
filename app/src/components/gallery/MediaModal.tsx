@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import Button from "../common/Button";
+import { api } from "../../client";
 
 function MetaData({
   items,
@@ -69,7 +70,11 @@ interface MediaModalProps {
   onDelete: (id: string) => void;
 }
 
-export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
+export default function MediaModal({
+  file,
+  onClose,
+  onDelete,
+}: MediaModalProps) {
   const [copied, setCopied] = useState(false);
   const [exif, setExif] = useState<ExifHeaders>({});
 
@@ -85,21 +90,7 @@ export function MediaModal({ file, onClose, onDelete }: MediaModalProps) {
   const url = `${BASE_URL}${file.file_url}`;
 
   useEffect(() => {
-    fetch(url, { method: "HEAD" }).then((r) => {
-      const { headers } = r;
-      const exif: Record<string, string> = {};
-
-      headers.forEach((value, key) => {
-        if (key.startsWith("x-exif")) {
-          exif[key.slice(7)] = value;
-        } else if (key.startsWith("x-audio")) {
-          exif[key.slice(8)] = value;
-        }
-      });
-
-      setExif(exif);
-    });
-
+    api.getFileMetadata(file.file_url).then((exif) => setExif(exif));
     () => {
       setExif({});
     };

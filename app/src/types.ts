@@ -71,3 +71,16 @@ export type ExifHeaders = {
   artist?: string;
   album?: string;
 };
+
+export type Settings = {
+  allow_public_signups: boolean;
+  require_2fa: boolean;
+  maintenance_mode: boolean;
+  max_upload_size_mb: number | null;
+  enforce_file_extensions: boolean;
+  file_name_length: number;
+};
+
+export type AuthResponse = {
+  token: string;
+};

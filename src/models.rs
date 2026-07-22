@@ -3,14 +3,21 @@ use sqlx::{SqlitePool, prelude::FromRow};
 use tokio::sync::broadcast;
 
 pub enum Role {
-    Admin = 1,
-    User = 2,
+    Admin,
+    User,
+}
+
+impl Role {
+    pub fn weight(&self) -> i64 {
+        match &self {
+            Role::Admin => 1,
+            Role::User => 0,
+        }
+    }
 }
 
 pub struct Config {
     pub file_save_path: String,
-    pub file_name_length: usize,
-    pub enforce_file_extensions: bool,
 }
 
 pub struct AppState {
@@ -93,4 +100,14 @@ pub struct MediaItem {
     pub uploaded_at: i64,
     pub content_type: String,
     pub original_file_name: Option<String>,
+}
+
+#[derive(Serialize, FromRow)]
+pub struct Settings {
+    pub allow_public_signups: bool,
+    pub require_2fa: bool,
+    pub maintenance_mode: bool,
+    pub max_upload_size_mb: Option<i64>,
+    pub enforce_file_extensions: bool,
+    pub file_name_length: i64,
 }

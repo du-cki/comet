@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT enforce_file_extensions FROM settings WHERE id = 1",
+  "describe": {
+    "columns": [
+      {
+        "name": "enforce_file_extensions",
+        "ordinal": 0,
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "settings",
+            "name": "enforce_file_extensions"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3db8d8796a98d015af28ae58a8e99808625d77f8fefc49fd975b554105c0b1e9"
+}

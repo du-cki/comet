@@ -26,10 +26,6 @@ async fn main() {
         config: models::Config {
             // TODO: configure for docker env:
             file_save_path: String::from("uploads/"),
-
-            // TODO: move to settings table:
-            file_name_length: 8,
-            enforce_file_extensions: true,
         },
         tx,
     });

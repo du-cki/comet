@@ -1,12 +1,18 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+
 import { useWebSocket } from "../providers/WebSocketProvider";
+
+import { BASE_URL } from "../utils";
+
+import { api } from "../client";
 import { FileDelete, FileUpload, UploadsList } from "../types";
+
+import { LoaderCircle } from "lucide-react";
+
 import VideoEmbed from "../components/gallery/VideoEmbed";
 import AudioEmbed from "../components/gallery/AudioEmbed";
-import { BASE_URL } from "../utils";
-import { MediaModal } from "../components/gallery/MediaModal";
-import { UploadDropdown } from "../components/gallery/UploadDropdown";
-import { LoaderCircle } from "lucide-react";
+import MediaModal from "../components/gallery/MediaModal";
+import UploadDropdown from "../components/gallery/UploadDropdown";
 
 export default function Gallery() {
   const [files, setFiles] = useState<UploadsList["data"]["items"]>([]);
@@ -109,14 +115,7 @@ export default function Gallery() {
   const handleDelete = async (id: string) => {
     setSelectedFile(null);
 
-    const token = localStorage.getItem("auth_token");
-
-    const req = await fetch(`${BASE_URL}/view/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const req = await api.deleteFile(id);
 
     if (req.status === 401) {
       window.location.reload();

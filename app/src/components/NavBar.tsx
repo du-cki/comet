@@ -71,11 +71,11 @@ const bottomNavItems: NavItemT[] = [
     minRole: Role.Admin,
     icon: <ShieldCogCorner />,
   },
-  {
-    label: "Settings",
-    route: "/settings",
-    icon: <Settings size={20} strokeWidth={1.5} className="shrink-0" />,
-  },
+  // {
+  //   label: "Settings",
+  //   route: "/settings",
+  //   icon: <Settings size={20} strokeWidth={1.5} className="shrink-0" />,
+  // },
 ];
 
 export function NavBar() {
@@ -117,7 +117,7 @@ export function NavBar() {
             <NavItem
               key={item.label}
               item={item}
-              onClick={() => onRoute(item.route!)}
+              onClick={() => item.route && onRoute(item.route)}
               isExpanded={isExpanded}
             />
           ))}
@@ -126,7 +126,12 @@ export function NavBar() {
 
       <div className="flex flex-col gap-2 pb-6">
         {bottomNavItems.filter(navVisibility).map((item) => (
-          <NavItem key={item.label} item={item} isExpanded={isExpanded} />
+          <NavItem
+            key={item.label}
+            onClick={() => item.route && onRoute(item.route)}
+            item={item}
+            isExpanded={isExpanded}
+          />
         ))}
 
         <NavItem

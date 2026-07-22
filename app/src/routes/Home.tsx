@@ -9,6 +9,7 @@ import Card from "../components/common/Card";
 import Login from "../components/home/Login";
 import Signup from "../components/home/Signup";
 import CMA from "../components/home/CMA";
+import { api } from "../client";
 
 export default function Home() {
   const [doesAnyAccountExist, setDoesAccountsExist] = useState<boolean | null>(
@@ -24,15 +25,13 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetch(`${BASE_URL}/does-any-user-exist`)
-      .then((r) => r.json())
-      .then(setDoesAccountsExist);
+    api.checkAnyUserExists().then(setDoesAccountsExist);
   }, []);
 
   return (
     <main className="flex min-h-svh items-center justify-center overflow-hidden px-4">
       <div className="w-full max-w-sm">
-        <Card className="space-y-6 p-6 rounded-2xl shadow-2xl shadow-black/40 backdrop-blur">
+        <Card className="space-y-6 rounded-2xl shadow-2xl shadow-black/40 backdrop-blur">
           <div className="text-center space-y-1.5">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
               {doesAnyAccountExist === false

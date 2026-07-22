@@ -6,7 +6,7 @@ use axum::{
     http::StatusCode,
     middleware::{self, Next},
     response::Response,
-    routing::{delete as del, get, head, post},
+    routing::{delete as del, get, head, patch, post},
 };
 
 use crate::{jwt::validate_jwt, models::AppState};
@@ -16,6 +16,7 @@ mod does_any_user_exist;
 mod exif_head;
 mod login;
 mod register;
+mod settings;
 mod upload;
 mod view;
 mod ws;
@@ -62,6 +63,8 @@ pub fn with_state(state: Arc<AppState>) -> Router {
     let auth = Router::new()
         .route("/upload", post(upload::route))
         .route("/view/{media_id}", del(delete::route))
+        .route("/settings", get(settings::get_settings))
+        .route("/settings", patch(settings::patch_settings))
         .layer(DefaultBodyLimit::disable())
         .route_layer(middleware::from_fn_with_state(
             state.clone(),

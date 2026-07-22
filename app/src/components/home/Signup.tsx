@@ -1,9 +1,9 @@
 import React, { SyntheticEvent, useState } from "react";
 
+import { api } from "../../client";
+
 import Button from "../common/Button";
 import Input from "../common/Input";
-
-import { BASE_URL } from "../../utils";
 
 type Props = {
   onAuth: (token: string) => void;
@@ -23,10 +23,12 @@ export default function Signup({ onAuth }: Props) {
       const formData = new FormData(e.currentTarget);
       const formValues = Object.fromEntries(formData.entries());
 
-      const req = await fetch(`${BASE_URL}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formValues),
+      const { name, email, password } = formValues;
+
+      const req = await api.register({
+        name: name as string,
+        email: email as string,
+        password: password as string,
       });
 
       if (!req.ok) {

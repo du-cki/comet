@@ -27,11 +27,16 @@ pub async fn route(
     Query(params): Query<ViewQuery>,
     State(state): State<Arc<AppState>>,
 ) -> Result<Response, (StatusCode, Json<ErrorResponse>)> {
+    let config = sqlx::query!("SELECT enforce_file_extensions FROM settings WHERE id = 1")
+        .fetch_one(&state.db)
+        .await
+        .map_err(internal_error)?;
+
     let mut ext: Option<&str> = None;
     let mut search_with_ext = false;
     let mut media_id = raw_media_id.clone();
 
-    if state.config.enforce_file_extensions {
+    if config.enforce_file_extensions {
         search_with_ext = true;
         if let (Some(parsed_media_id), Some(parsed_ext)) = parse_filename(&raw_media_id) {
             media_id = parsed_media_id.to_string();

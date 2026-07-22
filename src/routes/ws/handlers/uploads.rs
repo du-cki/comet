@@ -20,6 +20,11 @@ async fn fetch(
     limit: Option<i64>,
     state: &Arc<AppState>,
 ) -> Result<WsEvent, String> {
+    let config = sqlx::query!("SELECT enforce_file_extensions FROM settings WHERE id = 1")
+        .fetch_one(&state.db)
+        .await
+        .map_err(|e| e.to_string())?;
+
     let limit = limit.unwrap_or(20).clamp(1, 50);
     let query_limit = limit + 1;
     let mut cursor_time: Option<i64> = None;
@@ -63,7 +68,7 @@ async fn fetch(
         .into_iter()
         .map(|record| {
             let mut file_url = format!("/view/{}", &record.media_id);
-            if state.config.enforce_file_extensions {
+            if config.enforce_file_extensions {
                 if let Some(ext) = &record.file_ext {
                     file_url = format!("{}.{}", file_url, ext);
                 }

@@ -39,13 +39,14 @@ pub async fn route(
     Extension(user_id): Extension<i64>,
     mut multipart: Multipart,
 ) -> Result<(StatusCode, Json<UploadResponse>), (StatusCode, Json<ErrorResponse>)> {
-    let max_upload_mb: Option<i64> =
-        sqlx::query_scalar!("SELECT max_upload_size_mb FROM settings WHERE id = 1")
-            .fetch_one(&state.db)
-            .await
-            .map_err(internal_error)?;
+    let config = sqlx::query!(
+        "SELECT max_upload_size_mb, enforce_file_extensions, file_name_length FROM settings WHERE id = 1"
+    )
+    .fetch_one(&state.db)
+    .await
+    .map_err(internal_error)?;
 
-    let max_bytes = max_upload_mb.map(|mb| mb * 1024 * 1024);
+    let max_bytes = config.max_upload_size_mb.map(|mb| mb * 1024 * 1024);
 
     if let Ok(Some(mut field)) = multipart.next_field().await {
         let org_file_name = field.file_name().unwrap_or("unknown").to_string();
@@ -107,7 +108,7 @@ pub async fn route(
                 .map_err(internal_error)?;
 
         let (final_file_name, final_fp) = generate_file_path(
-            state.config.file_name_length,
+            config.file_name_length as usize,
             &state.config.file_save_path,
             &file_hash,
             &file_ext,
@@ -150,7 +151,7 @@ pub async fn route(
         .map_err(internal_error)?;
 
         let mut file_url = format!("/view/{}", &final_file_name);
-        if state.config.enforce_file_extensions {
+        if config.enforce_file_extensions {
             if let Some(ext) = file_ext {
                 file_url = format!("{}.{}", file_url, ext);
             }

@@ -45,11 +45,7 @@ function StorageBreakdown({
     .filter(({ value }) => value > 0);
 
   return (
-    <Card className="p-6">
-      <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-4">
-        Storage Breakdown
-      </h2>
-
+    <Card label="Storage Breakdown">
       <div className="h-50">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -157,11 +153,7 @@ export default function Dashboard() {
       </StatContainer>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="p-6 lg:col-span-2 flex flex-col">
-          <h2 className="text-sm font-medium text-muted-foreground mb-4 tracking-wide uppercase">
-            Traffic
-          </h2>
-
+        <Card label="Traffic" className="lg:col-span-2 flex flex-col">
           <div className="flex-1 flex items-center justify-center text-muted border border-dashed border-border rounded">
             TRAFFIC CHART
           </div>

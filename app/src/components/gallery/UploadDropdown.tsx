@@ -21,7 +21,7 @@ type UploadTask = {
   status: "pending" | "uploading" | "completed" | "error";
 };
 
-export function UploadDropdown() {
+export default function UploadDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [uploads, setUploads] = useState<UploadTask[]>([]);
 

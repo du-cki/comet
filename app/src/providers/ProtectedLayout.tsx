@@ -24,7 +24,7 @@ export default function ProtectedLayout() {
 
   if (status === "idle" || !ws) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-background">
+      <div className="flex min-h-svh items-center justify-center">
         <LoaderCircle
           className="animate-spin text-muted-foreground"
           size={32}

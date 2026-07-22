@@ -1,0 +1,2 @@
+ALTER TABLE settings ADD COLUMN enforce_file_extensions BOOLEAN NOT NULL DEFAULT 1;
+ALTER TABLE settings ADD COLUMN file_name_length INTEGER NOT NULL DEFAULT 8;

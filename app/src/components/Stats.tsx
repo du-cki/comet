@@ -54,7 +54,7 @@ export function StatContainer({ children, ...props }: ContainerProps) {
       {...props}
       className={cn(
         "flex flex-col md:flex-row overflow-hidden",
-        "divide-x-0 divide-y md:divide-x md:divide-y-0 divide-border",
+        "p-0 divide-x-0 divide-y md:divide-x md:divide-y-0 divide-border",
         props.className,
       )}
     >

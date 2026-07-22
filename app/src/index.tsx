@@ -12,6 +12,7 @@ import ProtectedLayout from "./providers/ProtectedLayout";
 import Home from "./routes/Home";
 import Dashboard from "./routes/Dashboard";
 import Gallery from "./routes/Gallery";
+import Admin from "./routes/Admin";
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
       {
         path: "/gallery",
         element: <Gallery />,
+      },
+      {
+        path: "/admin",
+        element: <Admin />,
       },
     ],
   },

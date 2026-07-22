@@ -45,7 +45,8 @@ pub(crate) async fn route(
         }
 
         Role::User
-    } as i64;
+    }
+    .weight();
 
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
