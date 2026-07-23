@@ -53,10 +53,10 @@ pub async fn route(
 ) -> Result<(StatusCode, Json<Vec<Upload>>), (StatusCode, Json<ErrorResponse>)> {
     let config = sqlx::query!(
         r#"
-            SELECT 
-                max_upload_size_mb, enforce_file_extensions, 
-                file_name_length, maintenance_mode 
-            FROM settings 
+            SELECT
+                max_upload_size_mb, enforce_file_extensions,
+                file_name_length, maintenance_mode
+            FROM settings
                 WHERE id = 1
         "#
     )

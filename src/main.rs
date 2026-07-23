@@ -30,6 +30,8 @@ async fn main() {
         tx,
     });
 
+    let _ = std::fs::create_dir_all(&state.config.file_save_path);
+
     let mut app = routes::with_state(state);
 
     #[cfg(debug_assertions)]
