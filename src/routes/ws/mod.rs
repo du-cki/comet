@@ -1,6 +1,7 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use axum::{
+    body::Bytes,
     extract::{
         State, WebSocketUpgrade,
         ws::{Message, WebSocket},
@@ -55,6 +56,8 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
 
     let mut rx = state.tx.subscribe();
 
+    let mut ping_interval = tokio::time::interval(Duration::from_secs(30));
+
     loop {
         tokio::select! {
             broadcast_result = rx.recv() => {
@@ -67,6 +70,11 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
                 if broadcast_msg.user_id == user.id
                     && send_ws_event(&mut socket, broadcast_msg.event).await.is_err()
                 {
+                    break;
+                }
+            }
+            _ = ping_interval.tick() => {
+                if socket.send(Message::Ping(Bytes::new())).await.is_err() {
                     break;
                 }
             }
