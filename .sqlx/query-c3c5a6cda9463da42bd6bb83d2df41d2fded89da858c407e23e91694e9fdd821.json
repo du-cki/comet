@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT enforce_file_extensions, maintenance_mode FROM settings WHERE id = 1",
+  "describe": {
+    "columns": [
+      {
+        "name": "enforce_file_extensions",
+        "ordinal": 0,
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "settings",
+            "name": "enforce_file_extensions"
+          }
+        }
+      },
+      {
+        "name": "maintenance_mode",
+        "ordinal": 1,
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "settings",
+            "name": "maintenance_mode"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "c3c5a6cda9463da42bd6bb83d2df41d2fded89da858c407e23e91694e9fdd821"
+}

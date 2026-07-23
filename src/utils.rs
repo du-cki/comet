@@ -1,6 +1,8 @@
 use axum::{Json, http::StatusCode};
+
 use nanoid::nanoid;
 use std::{ffi::OsStr, path::Path};
+use tokio::fs;
 
 use tracing::*;
 
@@ -42,4 +44,33 @@ pub fn parse_filename(filename: &String) -> (Option<&str>, Option<&str>) {
         path.file_stem().and_then(OsStr::to_str),
         path.extension().and_then(OsStr::to_str),
     )
+}
+
+pub struct TempFileGuard {
+    path: String,
+    armed: bool,
+}
+
+impl TempFileGuard {
+    pub fn new(path: String) -> Self {
+        Self { path, armed: true }
+    }
+
+    pub fn disarm(&mut self) {
+        self.armed = false
+    }
+}
+
+impl Drop for TempFileGuard {
+    fn drop(&mut self) {
+        if self.armed {
+            let path = std::mem::take(&mut self.path);
+
+            tokio::spawn(async move {
+                if let Err(e) = fs::remove_file(&path).await {
+                    error!("failed to clean up temp file {path}: {e}");
+                };
+            });
+        }
+    }
 }

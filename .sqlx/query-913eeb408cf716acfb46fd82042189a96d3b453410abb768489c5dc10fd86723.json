@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT max_upload_size_mb, enforce_file_extensions, file_name_length FROM settings WHERE id = 1",
+  "query": "\n            SELECT \n                max_upload_size_mb, enforce_file_extensions, \n                file_name_length, maintenance_mode \n            FROM settings \n                WHERE id = 1\n        ",
   "describe": {
     "columns": [
       {
@@ -35,6 +35,17 @@
             "name": "file_name_length"
           }
         }
+      },
+      {
+        "name": "maintenance_mode",
+        "ordinal": 3,
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "settings",
+            "name": "maintenance_mode"
+          }
+        }
       }
     ],
     "parameters": {
@@ -43,8 +54,9 @@
     "nullable": [
       true,
       false,
+      false,
       false
     ]
   },
-  "hash": "d1a721df250ee0cb6ff3f874468373c9681911cdc6e4fe6874f0d5dd709a3f97"
+  "hash": "913eeb408cf716acfb46fd82042189a96d3b453410abb768489c5dc10fd86723"
 }

@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT allow_public_signups, maintenance_mode FROM settings WHERE id = 1",
+  "describe": {
+    "columns": [
+      {
+        "name": "allow_public_signups",
+        "ordinal": 0,
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "settings",
+            "name": "allow_public_signups"
+          }
+        }
+      },
+      {
+        "name": "maintenance_mode",
+        "ordinal": 1,
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "settings",
+            "name": "maintenance_mode"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "1c4f9637b5d7168671586f98069c44ac1b94906c6016954a0c295707b5fd9785"
+}
