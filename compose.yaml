@@ -4,6 +4,7 @@ services:
       dockerfile: backend.Dockerfile
     restart: unless-stopped
     volumes:
+      - './data:/app/data'
       - './uploads:/app/uploads'
 
   app:

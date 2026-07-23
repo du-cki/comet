@@ -11,7 +11,7 @@ mod utils;
 async fn main() {
     tracing_subscriber::fmt::init();
 
-    let pool = sqlx::SqlitePool::connect("sqlite://data.db?mode=rwc")
+    let pool = sqlx::SqlitePool::connect("sqlite://data/data.db?mode=rwc")
         .await
         .unwrap();
 
