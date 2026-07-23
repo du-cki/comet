@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT \n                max_upload_size_mb, enforce_file_extensions, \n                file_name_length, maintenance_mode \n            FROM settings \n                WHERE id = 1\n        ",
+  "query": "\n            SELECT\n                max_upload_size_mb, enforce_file_extensions,\n                file_name_length, maintenance_mode\n            FROM settings\n                WHERE id = 1\n        ",
   "describe": {
     "columns": [
       {
@@ -58,5 +58,5 @@
       false
     ]
   },
-  "hash": "913eeb408cf716acfb46fd82042189a96d3b453410abb768489c5dc10fd86723"
+  "hash": "e08ef19e27ab86b31314027fbdc0319b60af543bdea743a67252c4600c0374cd"
 }
