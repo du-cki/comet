@@ -122,7 +122,25 @@ pub async fn route(
         results.push(outcome);
     }
 
-    return Ok((StatusCode::OK, Json(results)));
+    let has_failures = results
+        .iter()
+        .all(|upload| matches!(upload, Upload::Failure { .. }));
+
+    let status_code = if has_failures {
+        let all_failed = results
+            .iter()
+            .all(|upload| matches!(upload, Upload::Failure { .. }));
+
+        if all_failed {
+            StatusCode::BAD_REQUEST
+        } else {
+            StatusCode::MULTI_STATUS
+        }
+    } else {
+        StatusCode::OK
+    };
+
+    return Ok((status_code, Json(results)));
 }
 
 async fn process_field(

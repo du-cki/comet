@@ -147,7 +147,26 @@ export default function UploadDropdown() {
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        updateTask(task.id, { status: "completed", progress: 100 });
+        try {
+          const response = JSON.parse(xhr.responseText);
+          const result = response[0];
+
+          if (result && result.error) {
+            updateTask(task.id, { status: "error" });
+
+            console.error(
+              `upload failed for ${result.original_file_name}:`,
+              result.error,
+            );
+
+            return;
+          }
+
+          updateTask(task.id, { status: "completed", progress: 100 });
+        } catch (e) {
+          updateTask(task.id, { status: "error" });
+          console.error("failed to parse JSON response:", e);
+        }
       } else {
         updateTask(task.id, { status: "error" });
         console.error("upload failed:", xhr.responseText);
