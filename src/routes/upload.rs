@@ -208,10 +208,18 @@ async fn process_field(
 
     let metadata_json = serde_json::to_string(&parsed_meta).unwrap_or_else(|_| "{}".to_string());
 
-    let file_exists = sqlx::query!("SELECT file_path FROM media WHERE file_hash = ?", file_hash)
-        .fetch_optional(&state.db)
-        .await
-        .map_err(|e| format!("database error: {e}"))?;
+    let file_exists = sqlx::query!(
+        r#"
+            SELECT
+                file_path
+            FROM media
+                WHERE file_hash = ?
+        "#,
+        file_hash
+    )
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|e| format!("database error: {e}"))?;
 
     let (final_file_name, final_fp) = generate_file_path(
         file_name_length as usize,
