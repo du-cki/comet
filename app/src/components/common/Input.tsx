@@ -1,4 +1,5 @@
 import React, { ComponentProps } from "react";
+import { cn } from "../../utils";
 
 export function Label(props: ComponentProps<"label">) {
   return (
@@ -13,7 +14,7 @@ export function Label(props: ComponentProps<"label">) {
 
 type Props = { label?: string } & ComponentProps<"input">;
 
-export default function Input({ label, required, ...props }: Props) {
+export default function Input({ className, label, required, ...props }: Props) {
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
@@ -30,10 +31,13 @@ export default function Input({ label, required, ...props }: Props) {
           autoComplete="off"
           required={required}
           {...props}
-          className="border border-input outline-none bg-input/10 
-                     focus:bg-input/30 focus:ring-2 focus:ring-primary/50
-                     transition-all rounded-md h-10 w-full min-w-0 px-3 py-2 text-sm
-                     disabled:opacity-50 disabled:pointer-events-none"
+          className={cn(
+            "border border-input outline-none bg-input/10",
+            "focus:bg-input/30 focus:ring-2 focus:ring-primary/50",
+            "transition-all rounded-md h-10 w-full min-w-0 px-3 py-2 text-sm",
+            "disabled:opacity-50 disabled:pointer-events-none",
+            className,
+          )}
         />
         {props.children}
       </div>

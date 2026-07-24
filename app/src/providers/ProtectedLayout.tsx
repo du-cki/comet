@@ -5,13 +5,14 @@ import { useWebSocket } from "./WebSocketProvider";
 
 import { LoaderCircle } from "lucide-react";
 import { NavBar } from "../components/NavBar";
+import { TOKEN_NAME } from "../utils";
 
 export default function ProtectedLayout() {
   const { ws, status, connect } = useWebSocket();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token");
+    const token = localStorage.getItem(TOKEN_NAME);
     if (!token) {
       navigate("/", { replace: true });
       return;

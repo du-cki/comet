@@ -1,4 +1,7 @@
 import React from "react";
+
+import { cn } from "../utils";
+
 import Toggle from "./common/Toggle";
 
 interface SettingItemProps {
@@ -13,7 +16,33 @@ interface SettingItemProps {
   unit?: string;
 }
 
-export function SettingItem({
+export function SettingLabel({
+  label,
+  description,
+  children,
+}: {
+  label: string;
+  description: string;
+  children?: any;
+}) {
+  return (
+    <div className="flex flex-col">
+      <span className="text-sm font-semibold tracking-wide text-foreground">
+        {label}
+      </span>
+
+      <span
+        className={cn("text-xs text-muted-foreground mt-1", children && "mb-3")}
+      >
+        {description}
+      </span>
+
+      {children}
+    </div>
+  );
+}
+
+export default function SettingItem({
   label,
   description,
   checked,
@@ -30,9 +59,11 @@ export function SettingItem({
 
   const inputElement = hasInput && (
     <div
-      className={`flex items-center gap-2 ${
-        isInputBelow ? "transition-opacity duration-200" : ""
-      } ${!isInputEnabled ? "opacity-40 pointer-events-none" : "opacity-100"}`}
+      className={cn(
+        "flex items-center gap-2",
+        isInputBelow && "transition-opacity duration-200",
+        !isInputEnabled ? "opacity-40 pointer-events-none" : "opacity-100",
+      )}
     >
       <input
         type="number"
@@ -52,19 +83,15 @@ export function SettingItem({
 
   return (
     <div
-      className={`flex justify-between ${isInputBelow ? "items-start" : "items-center"}`}
+      className={cn(
+        "flex justify-between",
+        isInputBelow ? "items-start" : "items-center",
+      )}
     >
       <div className="flex flex-col">
-        <span className="text-sm font-semibold tracking-wide text-foreground">
-          {label}
-        </span>
-        <span
-          className={`text-xs text-muted-foreground mt-1 ${isInputBelow ? "mb-3" : ""}`}
-        >
-          {description}
-        </span>
-
-        {isInputBelow && inputElement}
+        <SettingLabel label={label} description={description}>
+          {isInputBelow && inputElement}
+        </SettingLabel>
       </div>
 
       <div className="flex items-center gap-4">

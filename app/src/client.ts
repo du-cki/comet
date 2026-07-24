@@ -1,11 +1,11 @@
 import type { ExifHeaders, Settings } from "./types";
-import { BASE_URL } from "./utils";
+import { BASE_URL, TOKEN_NAME } from "./utils";
 
 class ApiClient {
   #baseUrl: string = BASE_URL;
 
   async #request(endpoint: string, options: RequestInit = {}) {
-    const token = localStorage.getItem("auth_token");
+    const token = localStorage.getItem(TOKEN_NAME);
 
     const headers: Record<string, any> = {
       ...options.headers,
@@ -28,7 +28,7 @@ class ApiClient {
       const response = await fetch(`${this.#baseUrl}${endpoint}`, config);
 
       if (response.status === 401) {
-        localStorage.removeItem("auth_token");
+        localStorage.removeItem(TOKEN_NAME);
       }
 
       return response;
@@ -94,6 +94,19 @@ class ApiClient {
     return this.#request("/settings", {
       method: "PATCH",
       body: JSON.stringify({ [key]: newValue }),
+    });
+  }
+
+  async resetPassword(current_password: string, new_password: string) {
+    return this.#request("/profile/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ current_password, new_password }),
+    });
+  }
+
+  async resetKey() {
+    return this.#request("/profile/reset-key", {
+      method: "POST",
     });
   }
 }

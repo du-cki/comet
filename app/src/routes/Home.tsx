@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { BASE_URL, useTransitionNavigate } from "../utils";
+import { BASE_URL, TOKEN_NAME, useTransitionNavigate } from "../utils";
 
 import { LoaderCircle } from "lucide-react";
 
@@ -20,7 +20,7 @@ export default function Home() {
   const navigate = useTransitionNavigate();
 
   const handleAuth = (token: string) => {
-    localStorage.setItem("auth_token", token);
+    localStorage.setItem(TOKEN_NAME, token);
     navigate("/dashboard");
   };
 

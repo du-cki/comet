@@ -9,8 +9,19 @@ export const BASE_URL = process.env.APP_API_URL;
 // @ts-ignore
 export const WS_BASE_URL = process.env.APP_WS_URL;
 
+export const TOKEN_NAME = "auth_token";
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+export function getAbsoluteUrl(pathOrUrl: string): string {
+  if (pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://")) {
+    return pathOrUrl;
+  }
+
+  const cleanPath = pathOrUrl.startsWith("/") ? pathOrUrl : `/${pathOrUrl}`;
+  return `${window.location.origin}${cleanPath}`;
 }
 
 export function formatBytes(bytes: number, decimals: number = 1): string {

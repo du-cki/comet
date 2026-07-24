@@ -91,6 +91,7 @@ pub struct DbUser {
     pub name: String,
     pub role: i64,
     pub created_at: i64,
+    pub api_key: String,
 }
 
 #[derive(Clone, Debug, Serialize)]

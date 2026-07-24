@@ -1,6 +1,7 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation, decode, encode};
+use rand::{Rng, distributions::Alphanumeric};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -46,4 +47,12 @@ pub fn validate_jwt(
         &DecodingKey::from_secret(secret.as_bytes()),
         &Validation::default(),
     )
+}
+
+pub fn generate_api_token() -> String {
+    rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(32)
+        .map(char::from)
+        .collect()
 }

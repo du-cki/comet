@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 
-import { BASE_URL, cn } from "../../utils";
+import { BASE_URL, cn, TOKEN_NAME } from "../../utils";
 
 import {
   ImageUp,
@@ -133,7 +133,7 @@ export default function UploadDropdown() {
     const formData = new FormData();
     formData.append("file", task.file);
 
-    const token = localStorage.getItem("auth_token");
+    const token = localStorage.getItem(TOKEN_NAME);
 
     xhr.open("POST", `${BASE_URL}/upload`, true);
     xhr.setRequestHeader("Authorization", `Bearer ${token}`);

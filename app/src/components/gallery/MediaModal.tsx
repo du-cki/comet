@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import { BASE_URL, formatBytes } from "../../utils";
+import { BASE_URL, formatBytes, getAbsoluteUrl } from "../../utils";
 
 import type { ExifHeaders, UploadsList } from "../../types";
 
@@ -127,7 +127,7 @@ export default function MediaModal({
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(getAbsoluteUrl(url));
 
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);

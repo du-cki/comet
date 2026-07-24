@@ -7,7 +7,7 @@ import React, {
   ReactNode,
 } from "react";
 
-import { WS_BASE_URL } from "../utils";
+import { TOKEN_NAME, WS_BASE_URL } from "../utils";
 import { Authenticated, User } from "../types";
 
 type ConnectionStatus = "idle" | "connecting" | "connected" | "disconnected";
@@ -18,6 +18,7 @@ type WebSocketContextType = {
   status: ConnectionStatus;
   connect: (token: string) => void;
   disconnect: () => void;
+  logOut: () => void;
 };
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
@@ -85,13 +86,18 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     setStatus("idle");
   };
 
+  const logOut = () => {
+    disconnect();
+    localStorage.removeItem(TOKEN_NAME);
+  };
+
   useEffect(() => {
     return () => disconnect();
   }, []);
 
   return (
     <WebSocketContext.Provider
-      value={{ user, ws: wsInstance, status, connect, disconnect }}
+      value={{ user, ws: wsInstance, status, connect, disconnect, logOut }}
     >
       {children}
     </WebSocketContext.Provider>

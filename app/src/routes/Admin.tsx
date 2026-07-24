@@ -8,9 +8,9 @@ import { LoaderCircle } from "lucide-react";
 
 import type { DashboardStats } from "../types";
 
-import Card from "../components/common/Card";
 import { Stat, StatContainer } from "../components/Stats";
-import { SettingItem } from "../components/SettingItem";
+import SettingItem from "../components/SettingItem";
+import Card from "../components/common/Card";
 
 function Settings() {
   const [isLoading, setIsLoading] = useState(true);

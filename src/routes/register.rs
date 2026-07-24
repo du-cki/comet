@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use argon2::{Argon2, PasswordHasher, password_hash::SaltString};
 use axum::{Json, extract::State, http::StatusCode};
-use rand::{Rng, distributions::Alphanumeric, rngs::OsRng};
+use rand::rngs::OsRng;
 use serde::Deserialize;
 
 use crate::{
-    jwt::{create_jwt, current_timestamp},
+    jwt::{create_jwt, current_timestamp, generate_api_token},
     models::{AppState, AuthResponse, ErrorResponse, Role},
     utils::internal_error,
 };
@@ -72,11 +72,7 @@ pub(crate) async fn route(
         })?
         .to_string();
 
-    let api_key: String = rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(32)
-        .map(char::from)
-        .collect();
+    let api_key = generate_api_token();
 
     let created_at = current_timestamp();
     let insert_result = sqlx::query!(

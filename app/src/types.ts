@@ -8,6 +8,7 @@ export type User = {
   name: string;
   role: number;
   created_at: number;
+  api_key: string;
 };
 
 type WebSocketMessage<T, D> = {

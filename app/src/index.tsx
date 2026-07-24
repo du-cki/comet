@@ -13,6 +13,7 @@ import Home from "./routes/Home";
 import Dashboard from "./routes/Dashboard";
 import Gallery from "./routes/Gallery";
 import Admin from "./routes/Admin";
+import Settings from "./routes/Settings";
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
       {
         path: "/admin",
         element: <Admin />,
+      },
+      {
+        path: "/settings",
+        element: <Settings />,
       },
     ],
   },
