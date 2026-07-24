@@ -1,88 +1,18 @@
 import React, { useEffect, useState } from "react";
 
 import { api } from "../client";
+import { useWebSocket } from "../providers/WebSocketProvider";
+import { debounce, formatBytes } from "../utils";
 
 import { LoaderCircle } from "lucide-react";
 
+import type { DashboardStats } from "../types";
+
 import Card from "../components/common/Card";
-import Toggle from "../components/common/Toggle";
-import { debounce } from "../utils";
+import { Stat, StatContainer } from "../components/Stats";
+import { SettingItem } from "../components/SettingItem";
 
-interface SettingItemProps {
-  label: string;
-  description: string;
-
-  checked?: boolean;
-  onToggle?: (checked: boolean) => void;
-
-  value?: number;
-  onValueChange?: (value: number) => void;
-  unit?: string;
-}
-
-export function SettingItem({
-  label,
-  description,
-  checked,
-  onToggle,
-  value,
-  onValueChange,
-  unit,
-}: SettingItemProps) {
-  const hasToggle = onToggle !== undefined;
-  const hasInput = onValueChange !== undefined;
-
-  const isInputBelow = hasToggle && hasInput;
-  const isInputEnabled = hasToggle ? checked : true;
-
-  const inputElement = hasInput && (
-    <div
-      className={`flex items-center gap-2 ${
-        isInputBelow ? "transition-opacity duration-200" : ""
-      } ${!isInputEnabled ? "opacity-40 pointer-events-none" : "opacity-100"}`}
-    >
-      <input
-        type="number"
-        min={1}
-        value={value}
-        onChange={(e) => onValueChange(Number(e.target.value))}
-        disabled={!isInputEnabled}
-        className="bg-muted text-foreground border border-border rounded-md px-3 py-1.5 text-sm w-24 focus:outline-none focus:ring-2 focus:ring-accent transition-colors"
-      />
-      {unit && (
-        <span className="text-sm font-medium text-muted-foreground">
-          {unit}
-        </span>
-      )}
-    </div>
-  );
-
-  return (
-    <div
-      className={`flex justify-between ${isInputBelow ? "items-start" : "items-center"}`}
-    >
-      <div className="flex flex-col">
-        <span className="text-sm font-semibold tracking-wide text-foreground">
-          {label}
-        </span>
-        <span
-          className={`text-xs text-muted-foreground mt-1 ${isInputBelow ? "mb-3" : ""}`}
-        >
-          {description}
-        </span>
-
-        {isInputBelow && inputElement}
-      </div>
-
-      <div className="flex items-center gap-4">
-        {!isInputBelow && hasInput && inputElement}
-        {hasToggle && <Toggle checked={checked || false} onChange={onToggle} />}
-      </div>
-    </div>
-  );
-}
-
-export default function AdminSettings() {
+function Settings() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -171,7 +101,7 @@ export default function AdminSettings() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
       <Card label="Global Settings" className="space-y-4 w-full max-w-2xl">
         <SettingItem
           label="Maintenance Mode"
@@ -227,6 +157,71 @@ export default function AdminSettings() {
           onToggle={(val) => handleToggle("require_2fa", val, setRequire2FA)}
         />
       </Card>
+    </>
+  );
+}
+
+export default function Admin() {
+  const [stats, setStats] = useState<DashboardStats["data"]>({
+    total_files: 0,
+    total_files_trend: 0,
+    storage_used_bytes: 0,
+    storage_used_bytes_trend: 0,
+    views: 0,
+    average_file_size_bytes: 0,
+    file_types: [],
+  });
+
+  const { ws, status } = useWebSocket();
+
+  useEffect(() => {
+    if (!ws || status !== "connected") return;
+
+    ws.send(JSON.stringify({ action: "GetAdminStats" }));
+
+    const handleMessage = (ev: MessageEvent) => {
+      const e = JSON.parse(ev.data);
+      if (e.type === "DashboardStats") {
+        setStats((e as DashboardStats).data);
+      }
+    };
+
+    ws.addEventListener("message", handleMessage);
+    return () => {
+      ws.removeEventListener("message", handleMessage);
+    };
+  }, [ws, status]);
+
+  return (
+    <div className="space-y-6">
+      <StatContainer className="w-full">
+        <Stat
+          name="Files"
+          value={stats.total_files.toString()}
+          trend={{
+            value: stats.total_files_trend.toString(),
+            type: "up",
+          }}
+        />
+
+        <Stat
+          name="Storage Used"
+          value={formatBytes(Number(stats.storage_used_bytes))}
+          trend={{
+            value: formatBytes(Number(stats.storage_used_bytes_trend)),
+            type: "up",
+          }}
+        />
+
+        <Stat name="Views" value={stats.views.toString()} />
+
+        <Stat
+          name="Avg File Size"
+          value={formatBytes(Number(stats.average_file_size_bytes))}
+        />
+      </StatContainer>
+
+      <Settings />
     </div>
   );
 }

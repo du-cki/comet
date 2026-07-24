@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n        SELECT\n            COUNT(media_id) as total_files,\n            SUM(CASE WHEN uploaded_at >= unixepoch('now', '-1 month') THEN 1 ELSE 0 END) as total_files_trend,\n\n            SUM(file_size) as storage_used_bytes,\n            SUM(CASE WHEN uploaded_at >= unixepoch('now', '-1 month') THEN file_size ELSE 0 END) as storage_used_bytes_trend,\n\n            AVG(file_size) as avg_file_size,\n\n            SUM(CASE WHEN content_type LIKE 'image/%' THEN 1 ELSE 0 END) as images_count,\n            SUM(CASE WHEN content_type LIKE 'video/%' THEN 1 ELSE 0 END) as videos_count,\n            SUM(CASE WHEN content_type LIKE 'audio/%' THEN 1 ELSE 0 END) as audio_count,\n            SUM(CASE WHEN \n                content_type LIKE 'text/%' OR \n                content_type LIKE 'application/pdf' OR \n                content_type LIKE 'application/msword' OR \n                content_type LIKE 'application/vnd.%' \n            THEN 1 ELSE 0 END) as documents_count\n        FROM media\n        WHERE user_id = ?\n        ",
+  "query": "\n        SELECT\n            COUNT(media_id) as total_files,\n            SUM(CASE WHEN uploaded_at >= unixepoch('now', '-1 month') THEN 1 ELSE 0 END) as total_files_trend,\n\n            SUM(file_size) as storage_used_bytes,\n            SUM(CASE WHEN uploaded_at >= unixepoch('now', '-1 month') THEN file_size ELSE 0 END) as storage_used_bytes_trend,\n\n            AVG(file_size) as avg_file_size,\n\n            SUM(CASE WHEN content_type LIKE 'image/%' THEN 1 ELSE 0 END) as images_count,\n            SUM(CASE WHEN content_type LIKE 'video/%' THEN 1 ELSE 0 END) as videos_count,\n            SUM(CASE WHEN content_type LIKE 'audio/%' THEN 1 ELSE 0 END) as audio_count,\n            SUM(CASE WHEN \n                content_type LIKE 'text/%' OR \n                content_type LIKE 'application/pdf' OR \n                content_type LIKE 'application/msword' OR \n                content_type LIKE 'application/vnd.%' \n            THEN 1 ELSE 0 END) as documents_count\n        FROM media\n        WHERE (?1 OR user_id = ?2)\n        ",
   "describe": {
     "columns": [
       {
@@ -59,7 +59,7 @@
       }
     ],
     "parameters": {
-      "Right": 1
+      "Right": 2
     },
     "nullable": [
       false,
@@ -73,5 +73,5 @@
       true
     ]
   },
-  "hash": "9163c75cf3315a590320beb32110143e6f35d562f2ae39a7272b4c324152ebc1"
+  "hash": "086599167e67f0cef8d52a21e50ed3b89caaa4b6cf6ad8f057ee0258f172e47f"
 }

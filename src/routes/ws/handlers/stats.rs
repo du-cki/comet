@@ -1,8 +1,20 @@
 use std::sync::Arc;
 
-use crate::models::{AppState, FileTypeStat, WsEvent};
+use crate::models::{AppState, DbUser, FileTypeStat, Role, WsEvent};
 
-pub async fn get_stats(user_id: i64, state: &Arc<AppState>) -> WsEvent {
+pub async fn get_stats_admin(user: &DbUser, state: &Arc<AppState>) -> WsEvent {
+    if user.role == Role::Admin.weight() {
+        return _get_stats(user.id, state, true).await;
+    }
+
+    WsEvent::Error("Unauthorized".to_string())
+}
+
+pub async fn get_stats(user: &DbUser, state: &Arc<AppState>) -> WsEvent {
+    _get_stats(user.id, state, false).await
+}
+
+pub async fn _get_stats(user_id: i64, state: &Arc<AppState>, is_admin: bool) -> WsEvent {
     let result = sqlx::query!(
         r#"
         SELECT
@@ -24,8 +36,9 @@ pub async fn get_stats(user_id: i64, state: &Arc<AppState>) -> WsEvent {
                 content_type LIKE 'application/vnd.%' 
             THEN 1 ELSE 0 END) as documents_count
         FROM media
-        WHERE user_id = ?
+        WHERE (?1 OR user_id = ?2)
         "#,
+        is_admin,
         user_id
     )
     .fetch_one(&state.db)
@@ -33,14 +46,15 @@ pub async fn get_stats(user_id: i64, state: &Arc<AppState>) -> WsEvent {
 
     match result {
         Ok(row) => {
-            let total = row.total_files;
+            let total_files = row.total_files;
 
             let images_count = row.images_count.unwrap_or(0);
             let videos_count = row.videos_count.unwrap_or(0);
             let audio_count = row.audio_count.unwrap_or(0);
             let documents_count = row.documents_count.unwrap_or(0);
 
-            let other_count = total - (images_count + videos_count + audio_count + documents_count);
+            let other_count =
+                total_files - (images_count + videos_count + audio_count + documents_count);
 
             let file_types = vec![
                 FileTypeStat {
@@ -66,7 +80,7 @@ pub async fn get_stats(user_id: i64, state: &Arc<AppState>) -> WsEvent {
             ];
 
             WsEvent::DashboardStats {
-                total_files: row.total_files,
+                total_files,
                 total_files_trend: row.total_files_trend.unwrap_or(0),
 
                 storage_used_bytes: row.storage_used_bytes.unwrap_or(0),

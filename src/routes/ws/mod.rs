@@ -91,7 +91,7 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
                     continue;
                 };
 
-                let event = dispatch(cmd, user.id, &state).await;
+                let event = dispatch(cmd, &user, &state).await;
                 if send_ws_event(&mut socket, event).await.is_err() {
                     break;
                 }

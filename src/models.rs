@@ -56,6 +56,7 @@ pub enum WsEvent {
 #[serde(tag = "action")]
 pub enum WSClientCommand {
     GetStats,
+    GetAdminStats,
     GetUploads {
         cursor: Option<String>,
         limit: Option<i64>,

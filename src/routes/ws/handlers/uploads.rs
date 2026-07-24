@@ -1,14 +1,14 @@
 use std::sync::Arc;
 
-use crate::models::{AppState, MediaItem, WsEvent};
+use crate::models::{AppState, DbUser, MediaItem, WsEvent};
 
 pub async fn get_uploads(
-    user_id: i64,
+    user: &DbUser,
     cursor: Option<String>,
     limit: Option<i64>,
     state: &Arc<AppState>,
 ) -> WsEvent {
-    match fetch(user_id, cursor, limit, state).await {
+    match fetch(user.id, cursor, limit, state).await {
         Ok(event) => event,
         Err(msg) => WsEvent::Error(msg),
     }
