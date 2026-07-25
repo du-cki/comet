@@ -3,5 +3,6 @@
 *.env*
 
 /uploads
+/thumbnails
 /data
 *.db

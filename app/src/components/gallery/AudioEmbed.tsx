@@ -2,12 +2,13 @@ import React, { useRef, useState } from "react";
 
 import { Play, Pause, Disc3 } from "lucide-react";
 
-interface AudioCardProps {
+type Props = {
   src: string;
+  thumbnail: string;
   name: string;
-}
+};
 
-export default function AudioEmbed({ src, name }: AudioCardProps) {
+export default function AudioEmbed({ src, thumbnail, name }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -16,8 +17,6 @@ export default function AudioEmbed({ src, name }: AudioCardProps) {
   const [duration, setDuration] = useState(0);
 
   const [imgFailed, setImgFailed] = useState(false);
-
-  const thumbnailUrl = `${src}?thumbnail=true`;
 
   const togglePlay = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -83,7 +82,7 @@ export default function AudioEmbed({ src, name }: AudioCardProps) {
       <div className="relative aspect-square w-full bg-muted flex items-center justify-center overflow-hidden">
         {!imgFailed ? (
           <img
-            src={thumbnailUrl}
+            src={thumbnail}
             alt={`${name} cover art`}
             onError={() => setImgFailed(true)}
             className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isPlaying ? "scale-105" : "group-hover:scale-105"}`}

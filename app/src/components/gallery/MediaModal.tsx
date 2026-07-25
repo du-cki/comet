@@ -64,17 +64,13 @@ function ExtendedMetaData({
   );
 }
 
-interface MediaModalProps {
+type Props = {
   file: UploadsList["data"]["items"][number];
   onClose: () => void;
   onDelete: (id: string) => void;
-}
+};
 
-export default function MediaModal({
-  file,
-  onClose,
-  onDelete,
-}: MediaModalProps) {
+export default function MediaModal({ file, onClose, onDelete }: Props) {
   const [copied, setCopied] = useState(false);
   const [exif, setExif] = useState<ExifHeaders>({});
 

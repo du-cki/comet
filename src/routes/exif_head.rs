@@ -16,10 +16,17 @@ pub async fn route(
     State(state): State<Arc<AppState>>,
     Path(media_id): Path<String>,
 ) -> Result<(StatusCode, HeaderMap), (StatusCode, Json<ErrorResponse>)> {
-    let config = sqlx::query!("SELECT enforce_file_extensions FROM settings WHERE id = 1")
-        .fetch_one(&state.db)
-        .await
-        .map_err(internal_error)?;
+    let config = sqlx::query!(
+        r#"
+            SELECT
+                enforce_file_extensions
+            FROM
+                settings WHERE id = 1
+        "#
+    )
+    .fetch_one(&state.db)
+    .await
+    .map_err(internal_error)?;
 
     let mut media_id = media_id;
 

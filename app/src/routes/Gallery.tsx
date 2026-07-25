@@ -7,12 +7,14 @@ import { BASE_URL } from "../utils";
 import { api } from "../client";
 import { FileDelete, FileUpload, UploadsList } from "../types";
 
-import { LoaderCircle } from "lucide-react";
+import { File, LoaderCircle } from "lucide-react";
 
 import VideoEmbed from "../components/gallery/VideoEmbed";
 import AudioEmbed from "../components/gallery/AudioEmbed";
 import MediaModal from "../components/gallery/MediaModal";
 import UploadDropdown from "../components/gallery/UploadDropdown";
+import GenericEmbed from "../components/gallery/GenericEmbed";
+import ImageEmbed from "../components/gallery/ImageEmbed";
 
 export default function Gallery() {
   const [files, setFiles] = useState<UploadsList["data"]["items"]>([]);
@@ -138,10 +140,11 @@ export default function Gallery() {
         <UploadDropdown />
       </div>
 
-      <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4 p-4">
+      <div className="columns-2 md:columns-3 lg:columns-4 space-y-4 p-4 select-none">
         {files.map((file) => {
           const isVideo = file.content_type.startsWith("video/");
           const isAudio = file.content_type.startsWith("audio/");
+          const isImage = file.content_type.startsWith("image/");
 
           const url = `${BASE_URL}${file.file_url}`;
 
@@ -151,19 +154,24 @@ export default function Gallery() {
               className="break-inside-avoid"
               onClick={() => setSelectedFile(file)}
             >
-              {isAudio ? (
-                <AudioEmbed src={url} name={file.original_file_name} />
+              {isImage ? (
+                <ImageEmbed
+                  src={url.replace("view", "thumb")}
+                  alt={file.original_file_name}
+                />
               ) : isVideo ? (
                 <VideoEmbed src={url} />
+              ) : isAudio ? (
+                <AudioEmbed
+                  name={file.original_file_name}
+                  src={url}
+                  thumbnail={url.replace("view", "thumb")}
+                />
               ) : (
-                <div className="relative group rounded-lg overflow-hidden bg-card/20 border border-white/5">
-                  <img
-                    src={url}
-                    alt={file.original_file_name}
-                    className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                </div>
+                <GenericEmbed
+                  name={file.original_file_name}
+                  content_type={file.content_type}
+                />
               )}
             </div>
           );

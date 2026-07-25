@@ -1,12 +1,11 @@
 use axum::{
     Json,
     body::Body,
-    extract::{Path, Query, State},
+    extract::{Path, State},
     http::{StatusCode, header},
     response::{AppendHeaders, IntoResponse, Response},
 };
-use lofty::{file::TaggedFileExt, probe::Probe};
-use serde::Deserialize;
+
 use std::sync::Arc;
 use tokio::fs::File;
 use tokio_util::io::ReaderStream;
@@ -17,20 +16,21 @@ use crate::{
     utils::{internal_error, parse_filename},
 };
 
-#[derive(Deserialize)]
-pub struct ViewQuery {
-    pub thumbnail: Option<bool>,
-}
-
 pub async fn route(
     Path(raw_media_id): Path<String>,
-    Query(params): Query<ViewQuery>,
     State(state): State<Arc<AppState>>,
 ) -> Result<Response, (StatusCode, Json<ErrorResponse>)> {
-    let config = sqlx::query!("SELECT enforce_file_extensions FROM settings WHERE id = 1")
-        .fetch_one(&state.db)
-        .await
-        .map_err(internal_error)?;
+    let config = sqlx::query!(
+        r#"
+            SELECT
+                enforce_file_extensions
+            FROM
+                settings WHERE id = 1
+        "#
+    )
+    .fetch_one(&state.db)
+    .await
+    .map_err(internal_error)?;
 
     let mut ext: Option<&str> = None;
     let mut search_with_ext = false;
@@ -60,42 +60,6 @@ pub async fn route(
     .map_err(internal_error)?;
 
     if let Some(query) = res {
-        if params.thumbnail.unwrap_or(false) && query.content_type.starts_with("audio/") {
-            let file_path = query.file_path.clone();
-
-            let picture_data = tokio::task::spawn_blocking(move || {
-                if let Ok(tagged_file) = Probe::open(&file_path).and_then(|probe| probe.read()) {
-                    let tag = tagged_file
-                        .primary_tag()
-                        .or_else(|| tagged_file.first_tag());
-
-                    if let Some(tag) = tag {
-                        if let Some(pic) = tag.pictures().first() {
-                            let data = pic.data().to_vec();
-
-                            let mime = pic
-                                .mime_type()
-                                .map(|m| m.to_string())
-                                .unwrap_or_else(|| "image/jpeg".to_string());
-
-                            return Some((data, mime));
-                        }
-                    }
-                }
-
-                None
-            })
-            .await
-            .map_err(internal_error)?;
-
-            if let Some((pic_bytes, mime_type)) = picture_data {
-                let headers = AppendHeaders([(header::CONTENT_TYPE, mime_type)]);
-                let body = Body::from(pic_bytes);
-
-                return Ok((headers, body).into_response());
-            }
-        }
-
         let file = match File::open(&query.file_path).await {
             Ok(file) => file,
             Err(_) => {

@@ -19,6 +19,7 @@ mod login;
 mod profile;
 mod register;
 mod settings;
+mod thumbnail;
 mod upload;
 mod view;
 mod ws;
@@ -74,6 +75,7 @@ pub fn with_state(state: Arc<AppState>) -> Router {
         .route("/pineapple", get(ws::route))
         .route("/register", post(register::route))
         .route("/view/{media_id}", head(exif_head::route))
+        .route("/thumb/{media_id}", get(thumbnail::route))
         .route("/view/{media_id}", get(view::route));
 
     let auth = Router::new()

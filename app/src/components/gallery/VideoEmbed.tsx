@@ -1,17 +1,13 @@
 import { useRef, useState } from "react";
 import { Play, Volume2, VolumeX } from "lucide-react";
 
-interface VideoEmbedProps {
+type Props = {
   src: string;
   poster?: string;
   className?: string;
-}
+};
 
-export default function VideoEmbed({
-  src,
-  poster,
-  className = "",
-}: VideoEmbedProps) {
+export default function VideoEmbed({ src, poster, className = "" }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const [isHovered, setIsHovered] = useState(false);
