@@ -34,7 +34,10 @@ export type DashboardStats = WebSocketMessage<
   }
 >;
 
-type MediaItem = {
+export type FileUpload = WebSocketMessage<"FileUpload", File>;
+export type FileDelete = WebSocketMessage<"FileDelete", string>;
+
+export type File = {
   media_id: string;
   file_url: string;
   file_size: number;
@@ -43,16 +46,10 @@ type MediaItem = {
   original_file_name: string;
 };
 
-export type UploadsList = WebSocketMessage<
-  "UploadsList",
-  {
-    items: MediaItem[];
-    next_cursor: string | null;
-  }
->;
-
-export type FileUpload = WebSocketMessage<"FileUpload", MediaItem>;
-export type FileDelete = WebSocketMessage<"FileDelete", string>;
+export type FilesList = {
+  items: File[];
+  next_cursor: string | null;
+};
 
 export type ExifHeaders = {
   camera?: string;

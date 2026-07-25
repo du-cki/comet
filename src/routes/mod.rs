@@ -15,6 +15,7 @@ mod config;
 mod delete;
 mod does_any_user_exist;
 mod exif_head;
+mod files;
 mod login;
 mod profile;
 mod register;
@@ -80,6 +81,7 @@ pub fn with_state(state: Arc<AppState>) -> Router {
 
     let auth = Router::new()
         .route("/upload", post(upload::route))
+        .route("/files", get(files::route))
         .route("/profile/reset-password", post(profile::reset_password))
         .route("/profile/reset-key", post(profile::reset_api_key))
         .route("/view/{media_id}", del(delete::route))

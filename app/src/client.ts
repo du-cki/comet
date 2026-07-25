@@ -1,4 +1,4 @@
-import type { ExifHeaders, Settings } from "./types";
+import type { ExifHeaders, FilesList, Settings } from "./types";
 import { BASE_URL, TOKEN_NAME } from "./utils";
 
 class ApiClient {
@@ -56,6 +56,21 @@ class ApiClient {
       method: "POST",
       body: JSON.stringify(values),
     });
+  }
+
+  async getFiles({
+    cursor,
+    limit,
+  }: {
+    cursor: string | null;
+    limit: number | null;
+  }): Promise<FilesList> {
+    const params = new URLSearchParams();
+    if (cursor) params.append("cursor", cursor);
+    if (limit) params.append("limit", limit.toString());
+
+    const req = await this.#request(`/files?${params}`);
+    return req.json();
   }
 
   async deleteFile(media_id: string) {

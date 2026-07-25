@@ -5,9 +5,9 @@ import { useWebSocket } from "../providers/WebSocketProvider";
 import { BASE_URL } from "../utils";
 
 import { api } from "../client";
-import { FileDelete, FileUpload, UploadsList } from "../types";
+import type { File, FileDelete, FilesList, FileUpload } from "../types";
 
-import { File, LoaderCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 
 import VideoEmbed from "../components/gallery/VideoEmbed";
 import AudioEmbed from "../components/gallery/AudioEmbed";
@@ -17,10 +17,9 @@ import GenericEmbed from "../components/gallery/GenericEmbed";
 import ImageEmbed from "../components/gallery/ImageEmbed";
 
 export default function Gallery() {
-  const [files, setFiles] = useState<UploadsList["data"]["items"]>([]);
-  const [selectedFile, setSelectedFile] = useState<
-    UploadsList["data"]["items"][0] | null
-  >(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
@@ -44,13 +43,13 @@ export default function Gallery() {
       isFirstPageRef.current = cursor === null;
       if (cursor !== null) setIsLoadingMore(true);
 
-      ws.send(
-        JSON.stringify({
-          action: "GetUploads",
-          limit: 20,
-          cursor,
-        }),
-      );
+      api
+        .getFiles({ cursor, limit: 20 })
+        .then((files) =>
+          setFiles((old) =>
+            isFirstPageRef.current ? files.items : [...old, ...files.items],
+          ),
+        );
     },
     [ws, status],
   );
@@ -66,19 +65,7 @@ export default function Gallery() {
     const handleMessage = (ev: MessageEvent) => {
       const e = JSON.parse(ev.data);
 
-      if (e.type === "UploadsList") {
-        const { items, next_cursor } = (e as UploadsList).data;
-
-        setFiles((old) =>
-          isFirstPageRef.current ? items : [...old, ...items],
-        );
-
-        cursorRef.current = next_cursor;
-        setHasMore(next_cursor !== null);
-
-        isFetchingRef.current = false;
-        setIsLoadingMore(false);
-      } else if (e.type === "FileUpload") {
+      if (e.type === "FileUpload") {
         const { data } = e as FileUpload;
 
         setFiles((oldFiles) => [data, ...oldFiles]);

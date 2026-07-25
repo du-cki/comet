@@ -42,10 +42,6 @@ pub enum WsEvent {
 
         file_types: Vec<FileTypeStat>,
     },
-    UploadsList {
-        items: Vec<MediaItem>,
-        next_cursor: Option<String>,
-    },
     FileUpload(MediaItem),
     FileDelete(String),
     Authenticated(DbUser),
@@ -57,10 +53,6 @@ pub enum WsEvent {
 pub enum WSClientCommand {
     GetStats,
     GetAdminStats,
-    GetUploads {
-        cursor: Option<String>,
-        limit: Option<i64>,
-    },
 }
 
 #[derive(Debug, Serialize, Clone)]

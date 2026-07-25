@@ -1,17 +1,35 @@
 use std::sync::Arc;
 
-use crate::models::{AppState, DbUser, MediaItem, WsEvent};
+use axum::{
+    Extension, Json,
+    extract::{Query, State},
+    response::IntoResponse,
+};
+use serde::{Deserialize, Serialize};
 
-pub async fn get_uploads(
-    user: &DbUser,
-    cursor: Option<String>,
-    limit: Option<i64>,
-    state: &Arc<AppState>,
-) -> WsEvent {
-    match fetch(user.id, cursor, limit, state).await {
-        Ok(event) => event,
-        Err(msg) => WsEvent::Error(msg),
-    }
+use crate::models::{AppState, ErrorResponse, MediaItem};
+
+#[derive(Serialize)]
+pub struct FileResponse {
+    items: Vec<MediaItem>,
+    next_cursor: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct QueryParams {
+    pub cursor: Option<String>,
+    pub limit: Option<i64>,
+}
+
+pub async fn route(
+    State(state): State<Arc<AppState>>,
+    Extension(user_id): Extension<i64>,
+    Query(query): Query<QueryParams>,
+) -> impl IntoResponse {
+    fetch(user_id, query.cursor, query.limit, &state)
+        .await
+        .map(|r| Json(r))
+        .map_err(|error| Json(ErrorResponse { error }))
 }
 
 async fn fetch(
@@ -19,7 +37,7 @@ async fn fetch(
     cursor: Option<String>,
     limit: Option<i64>,
     state: &Arc<AppState>,
-) -> Result<WsEvent, String> {
+) -> Result<FileResponse, String> {
     let config = sqlx::query!("SELECT enforce_file_extensions FROM settings WHERE id = 1")
         .fetch_one(&state.db)
         .await
@@ -46,11 +64,19 @@ async fn fetch(
 
     let records = sqlx::query!(
         r#"
-        SELECT media_id, file_ext, file_size, uploaded_at, content_type, original_file_name
-        FROM media
-        WHERE user_id = ?
-          AND (? IS NULL OR uploaded_at < ? OR (uploaded_at = ? AND media_id < ?))
-        ORDER BY uploaded_at DESC, media_id DESC
+        SELECT 
+            media_id, file_ext, file_size, uploaded_at, content_type, original_file_name
+        FROM 
+            media
+        WHERE 
+            user_id = ?
+            AND (
+                ? IS NULL 
+                OR uploaded_at < ? 
+                OR (uploaded_at = ? AND media_id < ?)
+            )
+        ORDER BY 
+            uploaded_at DESC, media_id DESC
         LIMIT ?
         "#,
         user_id,
@@ -92,5 +118,5 @@ async fn fetch(
         }
     }
 
-    Ok(WsEvent::UploadsList { items, next_cursor })
+    Ok(FileResponse { items, next_cursor })
 }

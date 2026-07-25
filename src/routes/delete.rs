@@ -2,6 +2,7 @@ use axum::{
     Json,
     extract::{Extension, Path, State},
     http::StatusCode,
+    response::IntoResponse,
 };
 use std::sync::Arc;
 use tokio::fs::remove_file;
@@ -16,12 +17,18 @@ pub async fn route(
     State(state): State<Arc<AppState>>,
     Extension(user_id): Extension<i64>,
     Path(media_id): Path<String>,
-) -> Result<(StatusCode, Json<()>), (StatusCode, Json<ErrorResponse>)> {
-    let config =
-        sqlx::query!("SELECT enforce_file_extensions, maintenance_mode FROM settings WHERE id = 1")
-            .fetch_one(&state.db)
-            .await
-            .map_err(internal_error)?;
+) -> impl IntoResponse {
+    let config = sqlx::query!(
+        r#"
+            SELECT
+                enforce_file_extensions, maintenance_mode
+            FROM
+                settings WHERE id = 1
+        "#
+    )
+    .fetch_one(&state.db)
+    .await
+    .map_err(internal_error)?;
 
     if config.maintenance_mode {
         return Err((
@@ -33,7 +40,6 @@ pub async fn route(
     }
 
     let mut media_id = media_id;
-
     if config.enforce_file_extensions {
         if let (Some(parsed_media_id), _) = parse_filename(&media_id) {
             media_id = parsed_media_id.to_string();
@@ -44,7 +50,14 @@ pub async fn route(
         r#"
         SELECT 
             file_path, 
-            (SELECT COUNT(*) FROM media m2 WHERE m2.file_hash = m1.file_hash) AS "count!: i64"
+            (
+                SELECT
+                    COUNT(*)
+                FROM
+                    media m2
+                WHERE
+                    m2.file_hash = m1.file_hash
+            ) AS "count!: i64"
         FROM media m1
         WHERE m1.media_id = ? AND m1.user_id = ?;
         "#,
