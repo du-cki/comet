@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n        SELECT media_id, file_ext, file_size, uploaded_at, content_type, original_file_name\n        FROM media\n        WHERE user_id = ?\n          AND (? IS NULL OR uploaded_at < ? OR (uploaded_at = ? AND media_id < ?))\n        ORDER BY uploaded_at DESC, media_id DESC\n        LIMIT ?\n        ",
+  "query": "\n        SELECT \n            media_id, file_ext, file_size, uploaded_at, content_type, original_file_name\n        FROM \n            media\n        WHERE \n            user_id = ?\n            AND (\n                ? IS NULL \n                OR uploaded_at < ? \n                OR (uploaded_at = ? AND media_id < ?)\n            )\n        ORDER BY \n            uploaded_at DESC, media_id DESC\n        LIMIT ?\n        ",
   "describe": {
     "columns": [
       {
@@ -82,5 +82,5 @@
       true
     ]
   },
-  "hash": "cbe92f909ba05b3448dd24494d6fdf88fa531e853b01e2685d7a5d62712d85a9"
+  "hash": "1ec0a4588af150d306e86796161d97ab86d945806be3e436371bf23e1cd7e358"
 }

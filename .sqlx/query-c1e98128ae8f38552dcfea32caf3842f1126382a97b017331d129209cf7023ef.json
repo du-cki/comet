@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n        SELECT \n            file_path, \n            (SELECT COUNT(*) FROM media m2 WHERE m2.file_hash = m1.file_hash) AS \"count!: i64\"\n        FROM media m1\n        WHERE m1.media_id = ? AND m1.user_id = ?;\n        ",
+  "query": "\n        SELECT \n            file_path, \n            (\n                SELECT\n                    COUNT(*)\n                FROM\n                    media m2\n                WHERE\n                    m2.file_hash = m1.file_hash\n            ) AS \"count!: i64\"\n        FROM media m1\n        WHERE m1.media_id = ? AND m1.user_id = ?;\n        ",
   "describe": {
     "columns": [
       {
@@ -29,5 +29,5 @@
       false
     ]
   },
-  "hash": "a06bd51eec64757d413ea4f2b2bbda78edebfb667183ab5fbc5df087410a6658"
+  "hash": "c1e98128ae8f38552dcfea32caf3842f1126382a97b017331d129209cf7023ef"
 }

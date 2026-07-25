@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT enforce_file_extensions, maintenance_mode FROM settings WHERE id = 1",
+  "query": "\n            SELECT\n                enforce_file_extensions, maintenance_mode\n            FROM\n                settings WHERE id = 1\n        ",
   "describe": {
     "columns": [
       {
@@ -34,5 +34,5 @@
       false
     ]
   },
-  "hash": "c3c5a6cda9463da42bd6bb83d2df41d2fded89da858c407e23e91694e9fdd821"
+  "hash": "b1cfd7f6a9de2b04cc4d97183123f2f82bebd6972b7571e5073b184e3e62cbf7"
 }
